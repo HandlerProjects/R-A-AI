@@ -93,9 +93,8 @@ export default function ViajesPage() {
       id: `custom-${Date.now()}`,
       name: trimmed,
       country: "Destino propio",
-      category: "Personalizado",
-      keyword: "",
-      custom: true,
+      category: "Destino propio",
+      photo: `https://source.unsplash.com/featured/400x300/?${encodeURIComponent(trimmed)},travel,landscape`,
     };
     setCustomDestinations((prev) => [...prev, newDest]);
     setCustomDestInput("");
@@ -106,13 +105,54 @@ export default function ViajesPage() {
     return dest ? dest.name : id;
   });
 
-  const enterChat = () => {
-    const introMessage: Message = {
-      role: "assistant",
-      content: `¡Perfecto! 🌍 Vamos a planificar vuestro viaje.\n\n**Destinos elegidos:** ${selectedNames.join(", ")}\n**Presupuesto:** ${budget || "abierto"}\n\n¿Qué queréis que busque primero? Puedo mirarlo todo — vuelos, alojamiento, viabilidad, qué ver, cuándo ir... ¡decidid vosotros!`,
-    };
-    setMessages([introMessage]);
+  const enterChat = async () => {
+    const budgetText = budget ? `Presupuesto por persona: ${budget}.` : "Presupuesto abierto por ahora.";
+    const firstMsg = `Queremos planificar un viaje a ${selectedNames.join(", ")}. ${budgetText} Somos una pareja — Alejandro está en Rovereto (Italia) y Rut en España. Ayúdanos a construir el plan perfecto: vuelos desde ambas ciudades, mejor época para ir, alojamiento recomendado, qué ver y hacer, coste real estimado y viabilidad del presupuesto. ¡Empezamos!`;
+
+    const userMessage: Message = { role: "user", content: firstMsg };
+    setMessages([userMessage]);
     setPhase("chat");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [userMessage],
+          userId: resolvedUserId,
+          userName: userParam,
+          module: "viajes",
+        }),
+      });
+
+      if (!response.ok || !response.body) throw new Error();
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = "";
+
+      setMessages([userMessage, { role: "assistant", content: "" }]);
+      setIsLoading(false);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        for (const line of decoder.decode(value).split("\n")) {
+          if (line.startsWith("data: ") && line.slice(6) !== "[DONE]") {
+            try {
+              const t = JSON.parse(line.slice(6)).text;
+              if (t) {
+                assistantContent += t;
+                setMessages([userMessage, { role: "assistant", content: assistantContent }]);
+              }
+            } catch {}
+          }
+        }
+      }
+    } catch {
+      setIsLoading(false);
+      setMessages([{ role: "assistant", content: "Lo siento, hubo un error. Inténtalo de nuevo." }]);
+    }
   };
 
   const sendMessage = useCallback(
@@ -546,7 +586,7 @@ export default function ViajesPage() {
                   }}
                 >
                   {/* Background image */}
-                  {!dest.custom && (
+                  {dest.photo && (
                     <img
                       src={dest.photo}
                       alt={dest.name}
@@ -565,7 +605,7 @@ export default function ViajesPage() {
                   )}
 
                   {/* Gradient overlay */}
-                  {!dest.custom && (
+                  {dest.photo && (
                     <div
                       style={{
                         position: "absolute",
