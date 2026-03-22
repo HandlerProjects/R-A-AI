@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatBubble } from "@/components/ChatBubble";
@@ -107,8 +107,27 @@ export default function PostsPage() {
   const [cuenta, setCuenta] = useState<string | null>(null);
   const [tono, setTono] = useState<string | null>(null);
   const [tema, setTema] = useState("");
+  const [photos, setPhotos] = useState<{ base64: string; mediaType: string; preview: string }[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddPhotos = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    files.slice(0, 4 - photos.length).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const result = ev.target?.result as string;
+        setPhotos((prev) => prev.length < 4 ? [...prev, {
+          base64: result.split(",")[1],
+          mediaType: file.type,
+          preview: result,
+        }] : prev);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  }, [photos.length]);
 
   const { messages, isLoading, send } = useChatStream({
     userId: resolvedUserId,
@@ -129,6 +148,7 @@ export default function PostsPage() {
       `Tono: ${tono}`,
       `Tema: ${tema}`,
     ];
+    if (photos.length > 0) lines.push(`He adjuntado ${photos.length} foto(s) de referencia — tenlas en cuenta para el copy.`);
     if (plataforma === "linkedin") lines.push("Máximo 280 palabras, incluye CTA y 5 hashtags al final.");
     if (plataforma === "instagram") lines.push("Caption impactante, máximo 150 palabras, CTA + 15 hashtags al final.");
     if (isEmpresa) lines.push("Recuerda que es para la empresa en la que estoy de prácticas en Italia — tono más corporativo pero auténtico.");
@@ -141,13 +161,15 @@ export default function PostsPage() {
       `Dame 5 ideas de contenido para ${plat} ${formato} en la cuenta ${cuenta}, tono ${tono}.`,
       "Cada idea: título, hook de la primera línea, y por qué funcionaría.",
     ];
+    if (photos.length > 0) lines.push(`He adjuntado ${photos.length} foto(s) de referencia para inspirarte.`);
     if (isEmpresa) lines.push("Ideas para empresa italiana donde estoy de prácticas en el área de redes sociales.");
     return lines.join("\n");
   };
 
   const handleSend = async (promptFn: () => string) => {
     setPhase("chat");
-    await send(promptFn());
+    const imgOpts = photos.length > 0 ? { images: photos.map(p => ({ base64: p.base64, mediaType: p.mediaType })) } : undefined;
+    await send(promptFn(), imgOpts);
   };
 
   const configComplete = !!(plataforma && formato && cuenta && tono);
@@ -189,6 +211,32 @@ export default function PostsPage() {
         {/* Scrollable content */}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+
+            {/* Photos upload */}
+            <div>
+              <SectionLabel>📸 Fotos del post (opcional, máx. 4)</SectionLabel>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleAddPhotos} style={{ display: "none" }} />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {photos.map((p, i) => (
+                  <div key={i} style={{ position: "relative" }}>
+                    <img src={p.preview} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 12, border: "1.5px solid rgba(0,0,0,0.08)" }} />
+                    <button
+                      onClick={() => setPhotos((prev) => prev.filter((_, j) => j !== i))}
+                      style={{ position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: "50%", background: "#FF3B30", border: "2px solid white", color: "white", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, lineHeight: 1 }}
+                    >×</button>
+                  </div>
+                ))}
+                {photos.length < 4 && (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{ width: 80, height: 80, borderRadius: 12, border: "1.5px dashed rgba(0,0,0,0.15)", background: "white", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, color: "var(--text-tertiary)", fontSize: 11 }}
+                  >
+                    <span style={{ fontSize: 22 }}>+</span>
+                    <span>Añadir</span>
+                  </button>
+                )}
+              </div>
+            </div>
 
             {/* Step 1: Plataforma */}
             <div>

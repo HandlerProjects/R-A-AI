@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
       module,
       imageBase64,
       imageMediaType,
+      images,
     } = body as {
       messages: { role: "user" | "assistant"; content: string }[];
       userId: string;
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
       module: string;
       imageBase64?: string;
       imageMediaType?: string;
+      images?: { base64: string; mediaType: string }[];
     };
 
     if (!messages || !userName || !module) {
@@ -53,21 +55,28 @@ export async function POST(req: NextRequest) {
       sharedMemoriesText || undefined
     );
 
-    // Build message list, injecting image into the last user message if provided
+    // Normalise images: support both single imageBase64 and images array
+    const allImages: { base64: string; mediaType: string }[] = images?.length
+      ? images
+      : imageBase64
+      ? [{ base64: imageBase64, mediaType: imageMediaType ?? "image/jpeg" }]
+      : [];
+
+    // Build message list, injecting images into the last user message if provided
     const anthropicMessages = messages.map((m, i) => {
-      const isLastUserMessage = i === messages.length - 1 && m.role === "user" && imageBase64;
+      const isLastUserMessage = i === messages.length - 1 && m.role === "user" && allImages.length > 0;
       if (isLastUserMessage) {
         return {
           role: m.role as "user" | "assistant",
           content: [
-            {
+            ...allImages.map((img) => ({
               type: "image" as const,
               source: {
                 type: "base64" as const,
-                media_type: (imageMediaType ?? "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
-                data: imageBase64!,
+                media_type: img.mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+                data: img.base64,
               },
-            },
+            })),
             { type: "text" as const, text: m.content },
           ],
         };

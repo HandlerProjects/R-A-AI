@@ -16,6 +16,7 @@ interface UseChatStreamOptions {
 interface SendOptions {
   imageBase64?: string;
   imageMediaType?: string;
+  images?: { base64: string; mediaType: string }[];
 }
 
 export function useChatStream({ userId, userName, module }: UseChatStreamOptions) {
@@ -40,7 +41,7 @@ export function useChatStream({ userId, userName, module }: UseChatStreamOptions
             userId,
             userName,
             module,
-            ...(opts?.imageBase64 ? { imageBase64: opts.imageBase64, imageMediaType: opts.imageMediaType ?? "image/jpeg" } : {}),
+            ...(opts?.images ? { images: opts.images } : opts?.imageBase64 ? { imageBase64: opts.imageBase64, imageMediaType: opts.imageMediaType ?? "image/jpeg" } : {}),
           }),
         });
 
