@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
       imageBase64,
       imageMediaType,
       images,
+      tfgTopic,
     } = body as {
       messages: { role: "user" | "assistant"; content: string }[];
       userId: string;
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
       imageBase64?: string;
       imageMediaType?: string;
       images?: { base64: string; mediaType: string }[];
+      tfgTopic?: string;
     };
 
     if (!messages || !userName || !module) {
@@ -52,7 +54,8 @@ export async function POST(req: NextRequest) {
       userName,
       module,
       memoriesText || undefined,
-      sharedMemoriesText || undefined
+      sharedMemoriesText || undefined,
+      tfgTopic || undefined
     );
 
     // Normalise images: support both single imageBase64 and images array
