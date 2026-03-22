@@ -90,7 +90,7 @@ export default function SplashPage() {
             <span style={{
               fontSize: "clamp(36px, 10vw, 48px)",
               fontWeight: 700,
-              color: "#FF2D55",
+              color: "#FF7A00",
               letterSpacing: "0px",
               fontFamily: "var(--font-outfit), sans-serif",
               lineHeight: 1,
@@ -120,7 +120,7 @@ export default function SplashPage() {
             style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 6 }}
           >
             <span style={{ fontSize: 13, fontWeight: 300, color: "#6D6D72", letterSpacing: "0.12em" }}>Rut</span>
-            <div style={{ width: 3, height: 3, borderRadius: "50%", background: "#FF2D55" }} />
+            <span style={{ fontSize: 13, lineHeight: 1 }}>🧡</span>
             <span style={{ fontSize: 13, fontWeight: 300, color: "#6D6D72", letterSpacing: "0.12em" }}>Alejandro</span>
           </motion.div>
 
@@ -131,7 +131,7 @@ export default function SplashPage() {
             transition={{ delay: 0.5, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
             style={{
               height: 1,
-              background: "linear-gradient(90deg, transparent, #C7C7CC 30%, #FF2D55 50%, #C7C7CC 70%, transparent)",
+              background: "linear-gradient(90deg, transparent, #C7C7CC 30%, #FF7A00 50%, #C7C7CC 70%, transparent)",
               borderRadius: 1,
               marginTop: 14,
               transformOrigin: "center",
@@ -185,7 +185,7 @@ export default function SplashPage() {
           transition={{ delay: 0.85 }}
           style={{ display: "flex", gap: 6, marginTop: 24 }}
         >
-          {["#FF2D55", "#FF9500", "#34C759", "#007AFF", "#AF52DE"].map((color, i) => (
+          {["#FF7A00", "#FF2D55", "#34C759", "#007AFF", "#AF52DE"].map((color, i) => (
             <motion.div
               key={color}
               animate={{ y: [0, -4, 0] }}
