@@ -24,6 +24,7 @@ const ALEJANDRO_MODULES = [
 const RUT_MODULES = [
   { id: "tfg", icon: "🎓", title: "TFG", description: "Redacción, APA, análisis" },
   { id: "estudios", icon: "📚", title: "Estudios", description: "Resúmenes y exámenes" },
+  { id: "comidas", icon: "🥗", title: "Comidas", description: "Nutrición y recetas" },
   { id: "prompts", icon: "✍️", title: "Prompts", description: "Adaptado a tus necesidades" },
   { id: "psicologo", icon: "🧘", title: "Psicólogo", description: "Tu espacio privado" },
   { id: "posts", icon: "📱", title: "Posts", description: "Contenido propio" },

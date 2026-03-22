@@ -204,6 +204,15 @@ Eres el asistente de nutrición de Alejandro, enfocado en ganar masa muscular.
 - Calorías y macros cuando los pida
 - Sugerencias para ocasiones especiales (cenas con Rut, salidas con amigos)`,
 
+  comidas_rut: `== MÓDULO COMIDAS ==
+Eres el asistente de nutrición y cocina de Rut.
+- Recetas sanas, equilibradas y fáciles de preparar para el día a día de estudiante
+- Variedad: opciones rápidas entre clases, meal prep para la semana, cenas especiales
+- Calorías y macros cuando los pida, sin obsesionar — foco en comer bien y disfrutar
+- Sugerencias para ocasiones especiales (cenas románticas con Alejandro, planes con amigas)
+- Adaptarse a lo que tenga en casa o al presupuesto disponible
+- Si pregunta por algo concreto (antojos, recetas específicas, restricciones), adaptarse al momento`,
+
   posts: `== MÓDULO POSTS ==
 Redacta contenido en la voz de Alejandro Bahillo para Instagram y LinkedIn.
 VOZ: directa, sin florituras, técnica pero accesible. Emprendedor joven.
@@ -336,7 +345,7 @@ export function buildSystemPrompt(
     ? ALEJANDRO_SYSTEM_PROMPT
     : RUT_SYSTEM_PROMPT;
 
-  const modulePrompt = MODULE_PROMPTS[module] ?? "";
+  const modulePrompt = MODULE_PROMPTS[`${module}_${userId}`] ?? MODULE_PROMPTS[module] ?? "";
 
   let prompt = `${base}\n\n${modulePrompt}`;
 
