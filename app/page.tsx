@@ -224,9 +224,8 @@ export default function SplashPage() {
               <ProfileCard
                 name="alejandro"
                 displayName="Alejandro"
-                subtitle="Dev · Italia 🇮🇹"
                 avatarSrc="/avatar_alejandro.png"
-                accentColor="#1C1C1E"
+                accentColor="#FF7A00"
                 isLoading={loading === "alejandro"}
                 onClick={() => handleSelectUser("alejandro")}
                 delay={0.05}
@@ -234,9 +233,8 @@ export default function SplashPage() {
               <ProfileCard
                 name="rut"
                 displayName="Rut"
-                subtitle="Psicóloga · TFG 📚"
                 avatarSrc="/avatar_rut.png"
-                accentColor="#FF2D55"
+                accentColor="#FF7A00"
                 isLoading={loading === "rut"}
                 onClick={() => handleSelectUser("rut")}
                 delay={0.13}
@@ -252,7 +250,6 @@ export default function SplashPage() {
 interface ProfileCardProps {
   name: string;
   displayName: string;
-  subtitle: string;
   avatarSrc: string;
   accentColor: string;
   isLoading: boolean;
@@ -260,7 +257,7 @@ interface ProfileCardProps {
   delay: number;
 }
 
-function ProfileCard({ displayName, subtitle, avatarSrc, accentColor, isLoading, onClick, delay }: ProfileCardProps) {
+function ProfileCard({ displayName, avatarSrc, accentColor, isLoading, onClick, delay }: ProfileCardProps) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -321,16 +318,6 @@ function ProfileCard({ displayName, subtitle, avatarSrc, accentColor, isLoading,
         fontFamily: "var(--font-outfit), sans-serif",
       }}>
         {displayName}
-      </span>
-
-      <span style={{
-        fontSize: 11,
-        color: "#AEAEB2",
-        marginTop: 4,
-        fontWeight: 300,
-        letterSpacing: "0.04em",
-      }}>
-        {subtitle}
       </span>
 
       <motion.div
