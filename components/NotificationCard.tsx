@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const STORAGE_KEY = "ra_push_dismissed";
+const STORAGE_KEY = "ra_push_v2";
 
 interface NotificationCardProps {
   userName: string;
@@ -11,41 +11,35 @@ interface NotificationCardProps {
 
 export function NotificationCard({ userName }: NotificationCardProps) {
   const [visible, setVisible] = useState(false);
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
   useEffect(() => {
-    // Only show if not dismissed and push not already granted
     if (localStorage.getItem(STORAGE_KEY)) return;
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
     if (Notification.permission === "granted") return;
-    // Small delay so page loads first
-    const t = setTimeout(() => setVisible(true), 1200);
+    const t = setTimeout(() => setVisible(true), 1800);
     return () => clearTimeout(t);
   }, []);
 
   const dismiss = () => {
-    localStorage.setItem(STORAGE_KEY, "1");
+    localStorage.setItem(STORAGE_KEY, "dismissed");
     setVisible(false);
   };
 
   const handleEnable = async () => {
     setStatus("loading");
     try {
-      // Register service worker
       const reg = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
 
-      // Request permission
       const perm = await Notification.requestPermission();
-      if (perm !== "granted") { setStatus("error"); return; }
+      if (perm !== "granted") { setStatus("idle"); return; }
 
-      // Subscribe to push
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
       });
 
-      // Save to server
       await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,11 +47,10 @@ export function NotificationCard({ userName }: NotificationCardProps) {
       });
 
       setStatus("success");
-      localStorage.setItem(STORAGE_KEY, "1");
-      setTimeout(() => setVisible(false), 2200);
-    } catch (err) {
-      console.error(err);
-      setStatus("error");
+      localStorage.setItem(STORAGE_KEY, "granted");
+      setTimeout(() => setVisible(false), 2000);
+    } catch {
+      setStatus("idle");
     }
   };
 
@@ -65,145 +58,124 @@ export function NotificationCard({ userName }: NotificationCardProps) {
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ opacity: 0, y: 60, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 40, scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 300, damping: 26 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 16, scale: 0.96 }}
+          transition={{ type: "spring", stiffness: 340, damping: 28 }}
           style={{
             position: "fixed",
-            bottom: `calc(80px + env(safe-area-inset-bottom))`,
-            left: 16, right: 16,
+            bottom: `calc(76px + env(safe-area-inset-bottom))`,
+            left: "50%",
+            transform: "translateX(-50%)",
             zIndex: 200,
-            background: "linear-gradient(135deg, #FF2D55 0%, #FF6B8A 50%, #FF9A5C 100%)",
-            borderRadius: 24,
-            padding: "20px 20px 18px",
-            boxShadow: "0 12px 40px rgba(255,45,85,0.35), 0 4px 16px rgba(0,0,0,0.1)",
-            overflow: "hidden",
+            whiteSpace: "nowrap",
           }}
         >
-          {/* Decorative blobs */}
-          <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
-          <div style={{ position: "absolute", bottom: -30, left: 10, width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
-
           {status === "success" ? (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "8px 0" }}
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              style={{
+                display: "flex", alignItems: "center", gap: 7,
+                background: "linear-gradient(135deg, #FF2D55, #FF7A5C)",
+                borderRadius: 30,
+                padding: "9px 16px",
+                boxShadow: "0 4px 20px rgba(255,45,85,0.3)",
+              }}
             >
-              <motion.span
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ duration: 0.5 }}
-                style={{ fontSize: 40 }}
-              >
-                💗
-              </motion.span>
-              <p style={{ color: "white", fontWeight: 700, fontSize: 16, margin: 0, textAlign: "center" }}>
-                ¡Listo! Te avisaremos el 16 de abril 🇮🇹
-              </p>
+              {["💗", "🩷", "❤️"].map((h, i) => (
+                <motion.span
+                  key={i}
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.2 }}
+                  style={{ fontSize: 14 }}
+                >
+                  {h}
+                </motion.span>
+              ))}
+              <span style={{ color: "white", fontWeight: 600, fontSize: 13 }}>
+                ¡Activado! Te avisamos cada día 💗
+              </span>
             </motion.div>
           ) : (
-            <>
-              {/* Header row */}
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  {/* Animated bell */}
-                  <motion.div
-                    animate={{ rotate: [0, -15, 15, -10, 10, 0] }}
-                    transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 3 }}
-                    style={{
-                      width: 46, height: 46, borderRadius: 14,
-                      background: "rgba(255,255,255,0.2)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 24, flexShrink: 0,
-                    }}
-                  >
-                    🔔
-                  </motion.div>
-                  <div>
-                    <p style={{ color: "white", fontWeight: 700, fontSize: 15, margin: 0, lineHeight: 1.3 }}>
-                      Notificación especial
-                    </p>
-                    <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, margin: "2px 0 0", lineHeight: 1.3 }}>
-                      Para el día que os veáis 💗
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={dismiss}
-                  style={{ background: "rgba(255,255,255,0.15)", border: "none", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                    <path d="M18 6L6 18M6 6l12 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Description */}
-              <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, margin: "0 0 16px", lineHeight: 1.55 }}>
-                El <strong style={{ color: "white" }}>16 de abril</strong> os mandamos una notificación especial para que no os perdáis ese momento tan especial 🥺🇮🇹
-              </p>
-
-              {/* Floating hearts */}
-              <div style={{ display: "flex", gap: 4, marginBottom: 14 }}>
-                {["💗", "🩷", "❤️", "🩷", "💗"].map((h, i) => (
-                  <motion.span
-                    key={i}
-                    animate={{ y: [0, -4, 0] }}
-                    transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" }}
-                    style={{ fontSize: 14 }}
-                  >
-                    {h}
-                  </motion.span>
-                ))}
-              </div>
-
-              {/* Button */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              {/* Main pill */}
               <motion.button
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleEnable}
-                disabled={status === "loading" || status === "error"}
+                disabled={status === "loading"}
                 style={{
-                  width: "100%",
-                  padding: "13px",
-                  borderRadius: 16,
-                  border: "none",
-                  background: "white",
-                  color: "#FF2D55",
-                  fontWeight: 700,
-                  fontSize: 15,
-                  cursor: status === "loading" ? "default" : "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+                  display: "flex", alignItems: "center", gap: 8,
+                  background: "rgba(255,255,255,0.92)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  border: "1px solid rgba(255,45,85,0.2)",
+                  borderRadius: 30,
+                  padding: "9px 16px 9px 12px",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 20px rgba(255,45,85,0.15), 0 1px 6px rgba(0,0,0,0.06)",
                 }}
               >
                 {status === "loading" ? (
-                  <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 0.7, repeat: Infinity, ease: "linear" }}
-                      style={{ width: 16, height: 16, border: "2.5px solid #FF2D5520", borderTopColor: "#FF2D55", borderRadius: "50%" }}
-                    />
-                    Activando...
-                  </>
-                ) : status === "error" ? (
-                  "No se pudo activar — inténtalo desde la app"
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 0.7, repeat: Infinity, ease: "linear" }}
+                    style={{ width: 15, height: 15, border: "2px solid #FF2D5530", borderTopColor: "#FF2D55", borderRadius: "50%" }}
+                  />
                 ) : (
-                  <>
-                    <span>🔔</span> Activar notificación
-                  </>
+                  <motion.span
+                    animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
+                    style={{ fontSize: 16 }}
+                  >
+                    🔔
+                  </motion.span>
                 )}
+
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 0 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#FF2D55", lineHeight: 1.2 }}>
+                    Recordatorio diario
+                  </span>
+                  <span style={{ fontSize: 10, color: "#FF2D55", opacity: 0.6, lineHeight: 1.2 }}>
+                    Cuenta atrás hasta el 16 de abril 💗
+                  </span>
+                </div>
+
+                {/* Subtle hearts */}
+                <div style={{ display: "flex", gap: 2, marginLeft: 2 }}>
+                  {["💗", "🩷"].map((h, i) => (
+                    <motion.span
+                      key={i}
+                      animate={{ y: [0, -3, 0] }}
+                      transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.3 }}
+                      style={{ fontSize: 11 }}
+                    >
+                      {h}
+                    </motion.span>
+                  ))}
+                </div>
               </motion.button>
 
-              {status !== "error" && (
-                <button
-                  onClick={dismiss}
-                  style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 12, cursor: "pointer", width: "100%", marginTop: 10, padding: "4px 0" }}
-                >
-                  Ahora no
-                </button>
-              )}
-            </>
+              {/* Close */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={dismiss}
+                style={{
+                  width: 30, height: 30,
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.85)",
+                  backdropFilter: "blur(12px)",
+                  border: "1px solid rgba(0,0,0,0.07)",
+                  cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6l12 12" stroke="#8E8E93" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+              </motion.button>
+            </div>
           )}
         </motion.div>
       )}
