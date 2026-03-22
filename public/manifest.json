@@ -1,0 +1,24 @@
+{
+  "name": "R&A — Your Personal AI",
+  "short_name": "R&A",
+  "description": "La IA personal de Rut y Alejandro",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1D1D1F",
+  "theme_color": "#1D1D1F",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
