@@ -68,35 +68,72 @@ export default function SplashPage() {
         width: "100%",
       }}>
 
-        {/* R&A Logo */}
+        {/* LOGO */}
         <motion.div
-          initial={{ opacity: 0, y: -24, scale: 0.9 }}
+          initial={{ opacity: 0, y: -20, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ type: "spring", stiffness: 260, damping: 22 }}
-          style={{ textAlign: "center", marginBottom: 8 }}
+          transition={{ type: "spring", stiffness: 240, damping: 22 }}
+          style={{ textAlign: "center", marginBottom: 10 }}
         >
-          <h1 style={{
-            fontSize: "clamp(80px, 22vw, 108px)",
-            fontWeight: 800,
-            color: "#1C1C1E",
-            letterSpacing: "-4px",
-            lineHeight: 0.92,
-            margin: 0,
-            fontFamily: "-apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif",
-          }}>
-            R&A
-          </h1>
+          {/* The wordmark: R light + & accent + A light */}
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 0, lineHeight: 1 }}>
+            <span style={{
+              fontSize: "clamp(72px, 20vw, 96px)",
+              fontWeight: 300,
+              color: "#1C1C1E",
+              letterSpacing: "-3px",
+              fontFamily: "var(--font-outfit), sans-serif",
+              lineHeight: 1,
+            }}>
+              R
+            </span>
+            <span style={{
+              fontSize: "clamp(36px, 10vw, 48px)",
+              fontWeight: 700,
+              color: "#FF2D55",
+              letterSpacing: "0px",
+              fontFamily: "var(--font-outfit), sans-serif",
+              lineHeight: 1,
+              margin: "0 4px",
+              alignSelf: "center",
+              paddingBottom: 6,
+            }}>
+              &
+            </span>
+            <span style={{
+              fontSize: "clamp(72px, 20vw, 96px)",
+              fontWeight: 300,
+              color: "#1C1C1E",
+              letterSpacing: "-3px",
+              fontFamily: "var(--font-outfit), sans-serif",
+              lineHeight: 1,
+            }}>
+              A
+            </span>
+          </div>
 
-          {/* Divider */}
+          {/* Subtitle — names */}
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.4 }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 6 }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 300, color: "#6D6D72", letterSpacing: "0.12em" }}>Rut</span>
+            <div style={{ width: 3, height: 3, borderRadius: "50%", background: "#FF2D55" }} />
+            <span style={{ fontSize: 13, fontWeight: 300, color: "#6D6D72", letterSpacing: "0.12em" }}>Alejandro</span>
+          </motion.div>
+
+          {/* Thin line */}
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            transition={{ delay: 0.4, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ delay: 0.5, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
             style={{
-              height: 1.5,
-              background: "linear-gradient(90deg, transparent, #C7C7CC, transparent)",
+              height: 1,
+              background: "linear-gradient(90deg, transparent, #C7C7CC 30%, #FF2D55 50%, #C7C7CC 70%, transparent)",
               borderRadius: 1,
-              marginTop: 10,
+              marginTop: 14,
               transformOrigin: "center",
             }}
           />
@@ -104,12 +141,12 @@ export default function SplashPage() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.65 }}
             style={{
-              fontSize: 12,
-              fontWeight: 500,
+              fontSize: 10,
+              fontWeight: 400,
               color: "#AEAEB2",
-              letterSpacing: "0.18em",
+              letterSpacing: "0.22em",
               textTransform: "uppercase",
               margin: "10px 0 0",
             }}
@@ -118,25 +155,25 @@ export default function SplashPage() {
           </motion.p>
         </motion.div>
 
-        {/* Welcome message */}
+        {/* Welcome pill */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55, duration: 0.45 }}
+          transition={{ delay: 0.6, duration: 0.4 }}
           style={{
-            marginTop: 28,
+            marginTop: 24,
             background: "white",
-            borderRadius: 16,
-            padding: "14px 22px",
-            boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
+            borderRadius: 14,
+            padding: "12px 20px",
+            boxShadow: "0 2px 14px rgba(0,0,0,0.06)",
             border: "1px solid rgba(0,0,0,0.05)",
             textAlign: "center",
           }}
         >
-          <p style={{ fontSize: 11, fontWeight: 600, color: "#AEAEB2", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 3px" }}>
+          <p style={{ fontSize: 10, fontWeight: 600, color: "#AEAEB2", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 2px" }}>
             Bienvenidos de nuevo
           </p>
-          <p style={{ fontSize: 14, fontWeight: 500, color: "#3A3A3C", margin: 0, letterSpacing: "0.01em" }}>
+          <p style={{ fontSize: 13, fontWeight: 400, color: "#3A3A3C", margin: 0 }}>
             {dateStr}
           </p>
         </motion.div>
@@ -145,21 +182,21 @@ export default function SplashPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          style={{ display: "flex", gap: 6, marginTop: 28 }}
+          transition={{ delay: 0.85 }}
+          style={{ display: "flex", gap: 6, marginTop: 24 }}
         >
           {["#FF2D55", "#FF9500", "#34C759", "#007AFF", "#AF52DE"].map((color, i) => (
             <motion.div
               key={color}
               animate={{ y: [0, -4, 0] }}
               transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.18, ease: "easeInOut" }}
-              style={{ width: 6, height: 6, borderRadius: "50%", background: color }}
+              style={{ width: 5, height: 5, borderRadius: "50%", background: color }}
             />
           ))}
         </motion.div>
       </div>
 
-      {/* Cards section */}
+      {/* Cards */}
       <AnimatePresence>
         {showCards && (
           <motion.div
@@ -174,11 +211,11 @@ export default function SplashPage() {
           >
             <p style={{
               textAlign: "center",
-              fontSize: 13,
-              fontWeight: 500,
+              fontSize: 12,
+              fontWeight: 400,
               color: "#AEAEB2",
               marginBottom: 14,
-              letterSpacing: "0.01em",
+              letterSpacing: "0.04em",
             }}>
               ¿Quién eres hoy?
             </p>
@@ -238,18 +275,18 @@ function ProfileCard({ displayName, subtitle, avatarSrc, accentColor, isLoading,
       disabled={!!isLoading}
       style={{
         flex: 1,
-        background: hovered ? "white" : "white",
-        border: `1.5px solid ${hovered ? accentColor + "40" : "rgba(0,0,0,0.06)"}`,
+        background: "white",
+        border: `1.5px solid ${hovered ? accentColor + "35" : "rgba(0,0,0,0.06)"}`,
         borderRadius: 26,
-        padding: "24px 14px 28px",
+        padding: "22px 14px 26px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         cursor: "pointer",
         boxShadow: hovered
-          ? `0 12px 40px rgba(0,0,0,0.10), 0 0 0 3px ${accentColor}18`
+          ? `0 12px 40px rgba(0,0,0,0.09), 0 0 0 3px ${accentColor}14`
           : "0 2px 16px rgba(0,0,0,0.06)",
-        transition: "box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease",
+        transition: "all 0.25s ease",
         transform: hovered ? "translateY(-3px)" : "translateY(0)",
       }}
     >
@@ -258,12 +295,12 @@ function ProfileCard({ displayName, subtitle, avatarSrc, accentColor, isLoading,
         animate={{ scale: hovered ? 1.04 : 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
         style={{
-          width: 88,
-          height: 88,
+          width: 84,
+          height: 84,
           borderRadius: "50%",
           overflow: "hidden",
-          border: `3px solid ${accentColor}`,
-          boxShadow: `0 0 0 4px ${accentColor}18, 0 6px 20px rgba(0,0,0,0.12)`,
+          border: `2.5px solid ${accentColor}`,
+          boxShadow: `0 0 0 4px ${accentColor}15, 0 6px 18px rgba(0,0,0,0.10)`,
           marginBottom: 14,
           background: "#F2F2F7",
           flexShrink: 0,
@@ -277,34 +314,29 @@ function ProfileCard({ displayName, subtitle, avatarSrc, accentColor, isLoading,
       </motion.div>
 
       <span style={{
-        fontSize: 19,
-        fontWeight: 700,
+        fontSize: 18,
+        fontWeight: 600,
         color: "#1C1C1E",
-        letterSpacing: "-0.3px",
-        fontFamily: "-apple-system, 'SF Pro Display', sans-serif",
+        letterSpacing: "-0.2px",
+        fontFamily: "var(--font-outfit), sans-serif",
       }}>
         {displayName}
       </span>
 
       <span style={{
-        fontSize: 12,
+        fontSize: 11,
         color: "#AEAEB2",
         marginTop: 4,
-        fontWeight: 400,
+        fontWeight: 300,
+        letterSpacing: "0.04em",
       }}>
         {subtitle}
       </span>
 
-      {/* Accent bar */}
       <motion.div
-        animate={{ width: hovered ? 44 : 24 }}
+        animate={{ width: hovered ? 40 : 20, opacity: hovered ? 1 : 0.4 }}
         transition={{ duration: 0.25 }}
-        style={{
-          height: 3,
-          background: accentColor,
-          borderRadius: 2,
-          marginTop: 18,
-        }}
+        style={{ height: 2, background: accentColor, borderRadius: 1, marginTop: 16 }}
       />
 
       {isLoading && (
@@ -312,11 +344,11 @@ function ProfileCard({ displayName, subtitle, avatarSrc, accentColor, isLoading,
           animate={{ rotate: 360 }}
           transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
           style={{
-            width: 16, height: 16,
-            border: `2px solid ${accentColor}33`,
+            width: 15, height: 15,
+            border: `2px solid ${accentColor}25`,
             borderTopColor: accentColor,
             borderRadius: "50%",
-            marginTop: 12,
+            marginTop: 10,
           }}
         />
       )}
