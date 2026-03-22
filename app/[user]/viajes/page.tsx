@@ -18,41 +18,43 @@ interface Destination {
   country: string;
   category: string;
   photos: string[];
+  budget?: "€" | "€€" | "€€€";
 }
 
 const CATEGORIES = ["Todos", "Romántico", "Playa", "Ciudad", "Aventura", "Escapada"];
 
 const U = "https://images.unsplash.com/photo-";
+const SU = "https://source.unsplash.com/1200x800/?";
 const QS = "?auto=format&fit=crop&w=1200&q=95";
-const QT = "?auto=format&fit=crop&w=600&q=90";
 
-const p = (id: string) => `${U}${id}`;
+const p = (id: string) => `${U}${id}${QS}`;
+const s = (kw: string, sig: number) => `${SU}${kw}&sig=${sig}`;
 
 const DESTINATIONS: Destination[] = [
-  { id: "santorini", name: "Santorini",   country: "Grecia",          category: "Romántico",
-    photos: [`${p("1533105079780-92b9be482077")}${QS}`, `${p("1570077188670-e3a8d69ac5ff")}${QS}`, `${p("1597466759161-ba5ba9db34a3")}${QS}`] },
-  { id: "praga",     name: "Praga",       country: "República Checa", category: "Ciudad",
-    photos: [`${p("1541849546-216549ae216d")}${QS}`, `${p("1519677100203-a0e668c92439")}${QS}`, `${p("1592906209472-a36b1f3782ef")}${QS}`] },
-  { id: "dubrovnik", name: "Dubrovnik",   country: "Croacia",         category: "Playa",
-    photos: [`${p("1555990538-1e2a90a1acc9")}${QS}`, `${p("1607434472573-b3a2a5b0e14d")}${QS}`, `${p("1590076084931-3f4568abcb52")}${QS}`] },
-  { id: "lisboa",    name: "Lisboa",      country: "Portugal",        category: "Ciudad",
-    photos: [`${p("1513735492246-483525079686")}${QS}`, `${p("1555881400-74d7acaacd8b")}${QS}`, `${p("1558618666-fcd25c85cd64")}${QS}`] },
-  { id: "amsterdam", name: "Amsterdam",   country: "Países Bajos",    category: "Ciudad",
-    photos: [`${p("1534351590666-13e3e96b5017")}${QS}`, `${p("1519922639-96bff4c4cc26")}${QS}`, `${p("1576595580361-90a4a8eef1b1")}${QS}`] },
-  { id: "amalfi",    name: "Costa Amalfi",country: "Italia",          category: "Romántico",
-    photos: [`${p("1548199973-03cce0bbc87b")}${QS}`, `${p("1621155346337-1d19476ba7d6")}${QS}`, `${p("1499678567629-c1a1ee493e24")}${QS}`] },
-  { id: "budapest",  name: "Budapest",    country: "Hungría",         category: "Escapada",
-    photos: [`${p("1506905925346-21bda4d32df4")}${QS}`, `${p("1570096881776-65fe4c86c700")}${QS}`, `${p("1587974928338-b4c02df1fe72")}${QS}`] },
-  { id: "islandia",  name: "Islandia",    country: "Islandia",        category: "Aventura",
-    photos: [`${p("1531366936337-7c912a4589a7")}${QS}`, `${p("1520769945061-0a448c463865")}${QS}`, `${p("1476514525535-07fb3b4ae5f1")}${QS}`] },
-  { id: "marrakech", name: "Marrakech",   country: "Marruecos",       category: "Aventura",
-    photos: [`${p("1539020140153-d25072e53f95")}${QS}`, `${p("1493246507537-4e3e5e0df2eb")}${QS}`, `${p("1512632578888-169bbbc64f33")}${QS}`] },
-  { id: "florencia", name: "Florencia",   country: "Italia",          category: "Romántico",
-    photos: [`${p("1543332164-6e82f3e4d042")}${QS}`, `${p("1534259173219-43c2b3db6b4b")}${QS}`, `${p("1516483638261-f4dbaf036963")}${QS}`] },
-  { id: "viena",     name: "Viena",       country: "Austria",         category: "Escapada",
-    photos: [`${p("1516550893923-42d28e5677af")}${QS}`, `${p("1573059864197-7f2afce18e46")}${QS}`, `${p("1558369981-f9ca78462879")}${QS}`] },
-  { id: "mykonos",   name: "Mykonos",     country: "Grecia",          category: "Playa",
-    photos: [`${p("1601581975053-8b05e8ee7e85")}${QS}`, `${p("1578662996442-48f60103fc96")}${QS}`, `${p("1555400396-8f50ac44a4a6")}${QS}`] },
+  { id: "santorini", name: "Santorini",    country: "Grecia",          category: "Romántico", budget: "€€€",
+    photos: [p("1533105079780-92b9be482077"), p("1570077188670-e3a8d69ac5ff"), s("santorini,oia,sunset", 3)] },
+  { id: "praga",     name: "Praga",        country: "República Checa", category: "Ciudad",    budget: "€",
+    photos: [p("1541849546-216549ae216d"), p("1519677100203-a0e668c92439"), s("prague,charles,bridge", 6)] },
+  { id: "dubrovnik", name: "Dubrovnik",    country: "Croacia",         category: "Playa",     budget: "€€",
+    photos: [s("dubrovnik,walls,croatia", 11), s("dubrovnik,old,town", 12), s("dubrovnik,sea,adriatic", 13)] },
+  { id: "lisboa",    name: "Lisboa",       country: "Portugal",        category: "Ciudad",    budget: "€",
+    photos: [p("1513735492246-483525079686"), p("1555881400-74d7acaacd8b"), s("lisbon,alfama,portugal", 21)] },
+  { id: "amsterdam", name: "Amsterdam",    country: "Países Bajos",    category: "Ciudad",    budget: "€€",
+    photos: [p("1534351590666-13e3e96b5017"), p("1519922639-96bff4c4cc26"), s("amsterdam,canal,houses", 31)] },
+  { id: "amalfi",    name: "Costa Amalfi", country: "Italia",          category: "Romántico", budget: "€€€",
+    photos: [p("1548199973-03cce0bbc87b"), p("1621155346337-1d19476ba7d6"), s("amalfi,coast,positano", 41)] },
+  { id: "budapest",  name: "Budapest",     country: "Hungría",         category: "Escapada",  budget: "€",
+    photos: [p("1506905925346-21bda4d32df4"), p("1570096881776-65fe4c86c700"), s("budapest,parliament,danube", 51)] },
+  { id: "islandia",  name: "Islandia",     country: "Islandia",        category: "Aventura",  budget: "€€€",
+    photos: [p("1531366936337-7c912a4589a7"), p("1520769945061-0a448c463865"), s("iceland,waterfall,nature", 61)] },
+  { id: "marrakech", name: "Marrakech",    country: "Marruecos",       category: "Aventura",  budget: "€",
+    photos: [s("marrakech,souk,morocco", 71), s("marrakech,medina,colorful", 72), s("morocco,riad,garden", 73)] },
+  { id: "florencia", name: "Florencia",    country: "Italia",          category: "Romántico", budget: "€€",
+    photos: [s("florence,duomo,italy", 81), s("florence,ponte,vecchio", 82), s("tuscany,hills,italy", 83)] },
+  { id: "viena",     name: "Viena",        country: "Austria",         category: "Escapada",  budget: "€€",
+    photos: [p("1516550893923-42d28e5677af"), s("vienna,palace,schoenbrunn", 92), s("vienna,opera,street", 93)] },
+  { id: "mykonos",   name: "Mykonos",      country: "Grecia",          category: "Playa",     budget: "€€€",
+    photos: [s("mykonos,windmill,greece", 101), s("mykonos,white,blue", 102), s("mykonos,beach,cyclades", 103)] },
 ];
 
 const BUDGETS = ["< 300€", "300–700€", "700–1500€", "+1500€"];
@@ -713,17 +715,22 @@ export default function ViajesPage() {
                     >
                       {dest.name}
                     </p>
-                    <p
-                      style={{
-                        margin: "2px 0 0",
-                        fontSize: 11,
-                        color: "rgba(255,255,255,0.8)",
-                        fontWeight: 500,
-                        textShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                      }}
-                    >
-                      {dest.country}
-                    </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                      <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.8)", fontWeight: 500, textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>
+                        {dest.country}
+                      </p>
+                      {dest.budget && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 700,
+                          color: dest.budget === "€" ? "#34C759" : dest.budget === "€€" ? "#FF9500" : "#FF3B30",
+                          background: dest.budget === "€" ? "rgba(52,199,89,0.2)" : dest.budget === "€€" ? "rgba(255,149,0,0.2)" : "rgba(255,59,48,0.2)",
+                          borderRadius: 6, padding: "1px 5px",
+                          backdropFilter: "blur(4px)",
+                        }}>
+                          {dest.budget}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </motion.button>
               );
@@ -1026,7 +1033,20 @@ export default function ViajesPage() {
                 {/* Destination name overlay */}
                 <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 20px" }}>
                   <p style={{ margin: 0, fontSize: 26, fontWeight: 800, color: "white", letterSpacing: "-0.5px" }}>{modalDest.name}</p>
-                  <p style={{ margin: "2px 0 0", fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{modalDest.country} · {modalDest.category}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                    <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{modalDest.country} · {modalDest.category}</p>
+                    {modalDest.budget && (
+                      <span style={{
+                        fontSize: 13, fontWeight: 800,
+                        color: modalDest.budget === "€" ? "#34C759" : modalDest.budget === "€€" ? "#FF9500" : "#FF3B30",
+                        background: modalDest.budget === "€" ? "rgba(52,199,89,0.2)" : modalDest.budget === "€€" ? "rgba(255,149,0,0.2)" : "rgba(255,59,48,0.2)",
+                        borderRadius: 8, padding: "2px 8px",
+                        backdropFilter: "blur(4px)",
+                      }}>
+                        {modalDest.budget}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
