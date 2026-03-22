@@ -15,11 +15,15 @@ export async function POST(req: NextRequest) {
       userId: userIdParam,
       userName,
       module,
+      imageBase64,
+      imageMediaType,
     } = body as {
       messages: { role: "user" | "assistant"; content: string }[];
       userId: string;
       userName: "alejandro" | "rut";
       module: string;
+      imageBase64?: string;
+      imageMediaType?: string;
     };
 
     if (!messages || !userName || !module) {
@@ -49,15 +53,34 @@ export async function POST(req: NextRequest) {
       sharedMemoriesText || undefined
     );
 
+    // Build message list, injecting image into the last user message if provided
+    const anthropicMessages = messages.map((m, i) => {
+      const isLastUserMessage = i === messages.length - 1 && m.role === "user" && imageBase64;
+      if (isLastUserMessage) {
+        return {
+          role: m.role as "user" | "assistant",
+          content: [
+            {
+              type: "image" as const,
+              source: {
+                type: "base64" as const,
+                media_type: (imageMediaType ?? "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+                data: imageBase64!,
+              },
+            },
+            { type: "text" as const, text: m.content },
+          ],
+        };
+      }
+      return { role: m.role as "user" | "assistant", content: m.content };
+    });
+
     // Stream response
     const stream = await client.messages.stream({
       model: "claude-sonnet-4-6",
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: systemPrompt,
-      messages: messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      })),
+      messages: anthropicMessages,
     });
 
     // Return as SSE stream
