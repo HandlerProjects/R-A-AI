@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
@@ -46,6 +46,19 @@ export default function HomePage() {
   const ownModules = isAlejandro ? ALEJANDRO_MODULES : RUT_MODULES;
   const greeting = getGreeting();
 
+  const [countdown, setCountdown] = useState<{ days: number; hours: number; done: boolean } | null>(null);
+  useEffect(() => {
+    const target = new Date("2026-04-16T00:00:00").getTime();
+    const tick = () => {
+      const diff = target - Date.now();
+      if (diff <= 0) { setCountdown({ days: 0, hours: 0, done: true }); return; }
+      setCountdown({ days: Math.floor(diff / 86400000), hours: Math.floor((diff % 86400000) / 3600000), done: false });
+    };
+    tick();
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg-primary)", overflow: "hidden" }}>
 
@@ -72,6 +85,35 @@ export default function HomePage() {
               {displayName}
             </h1>
           </div>
+
+          {/* Countdown badge */}
+          {countdown && !countdown.done && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: "spring", stiffness: 300, damping: 22 }}
+              style={{
+                display: "flex", flexDirection: "column", alignItems: "center",
+                background: "linear-gradient(135deg, #fff0f3 0%, #fff5f0 100%)",
+                border: "1px solid rgba(255,45,85,0.2)",
+                borderRadius: 14, padding: "6px 10px",
+                boxShadow: "0 2px 10px rgba(255,45,85,0.12)",
+                marginRight: 8,
+              }}
+            >
+              <div style={{ display: "flex", gap: 3 }}>
+                {["💗", "🩷"].map((h, i) => (
+                  <motion.span key={i} animate={{ y: [0, -3, 0] }} transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.3, ease: "easeInOut" }} style={{ fontSize: 11 }}>{h}</motion.span>
+                ))}
+              </div>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#FF2D55", lineHeight: 1.1, fontVariantNumeric: "tabular-nums" }}>
+                {countdown.days}d {countdown.hours}h
+              </span>
+              <span style={{ fontSize: 8, fontWeight: 600, color: "#FF2D55", opacity: 0.55, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                Italia 🇮🇹
+              </span>
+            </motion.div>
+          )}
 
           <button
             onClick={() => router.push("/")}
