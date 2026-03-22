@@ -23,8 +23,8 @@ interface Destination {
 const CATEGORIES = ["Todos", "Romántico", "Playa", "Ciudad", "Aventura", "Escapada"];
 
 const U = "https://images.unsplash.com/photo-";
-const QS = "?auto=format&fit=crop&w=800&q=85";
-const QT = "?auto=format&fit=crop&w=400&q=80";
+const QS = "?auto=format&fit=crop&w=1200&q=95";
+const QT = "?auto=format&fit=crop&w=600&q=90";
 
 const p = (id: string) => `${U}${id}`;
 
@@ -1055,14 +1055,14 @@ export default function ViajesPage() {
                   whileTap={{ scale: 0.97 }}
                   onClick={() => { toggleDestination(modalDest.id); closeModal(); }}
                   style={{
-                    width: "100%", height: 54, borderRadius: 18, border: "none",
+                    width: "100%", height: 54, borderRadius: 18,
+                    border: selectedDestinations.includes(modalDest.id) ? "1px solid rgba(255,255,255,0.15)" : "none",
                     background: selectedDestinations.includes(modalDest.id)
                       ? "rgba(255,255,255,0.1)"
                       : `linear-gradient(135deg, ${ACCENT} 0%, #FF6B35 100%)`,
                     color: "white", fontSize: 16, fontWeight: 700,
                     cursor: "pointer",
                     boxShadow: selectedDestinations.includes(modalDest.id) ? "none" : "0 4px 20px rgba(255,45,85,0.4)",
-                    border: selectedDestinations.includes(modalDest.id) ? "1px solid rgba(255,255,255,0.15)" : "none",
                   }}
                 >
                   {selectedDestinations.includes(modalDest.id) ? "✓ Seleccionado — quitar" : "Seleccionar destino"}
