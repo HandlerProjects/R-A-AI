@@ -20,17 +20,61 @@ function getWelcomeDate() {
   return `${day} ${date} de ${month} · ${hours}:${minutes}${ampm}`;
 }
 
+const REUNION_DATE = new Date("2026-04-16T00:00:00");
+
+const CURSI_MESSAGES = [
+  "Hasta volver a ver a la luz de mis ojos 🌟",
+  "Contando cada segundo hasta tenerte aquí 💫",
+  "Hasta volver a tener al amor de mi vida cerca 🥺",
+  "Cada momento sin ti es demasiado largo ❤️",
+  "Faltan estos momentitos para fundirme contigo 🫂",
+];
+
+function useCountdown(target: Date) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, done: false });
+
+  useEffect(() => {
+    const tick = () => {
+      const diff = target.getTime() - Date.now();
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, done: true });
+        return;
+      }
+      setTimeLeft({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        minutes: Math.floor((diff % 3600000) / 60000),
+        seconds: Math.floor((diff % 60000) / 1000),
+        done: false,
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [target]);
+
+  return timeLeft;
+}
+
 export default function SplashPage() {
   const router = useRouter();
   const { setUser } = useUserStore();
   const [showCards, setShowCards] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const [dateStr, setDateStr] = useState("");
+  const [msgIndex, setMsgIndex] = useState(0);
+  const countdown = useCountdown(REUNION_DATE);
 
   useEffect(() => {
     setDateStr(getWelcomeDate());
     const timer = setTimeout(() => setShowCards(true), 500);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Rotate romantic message every 4 seconds
+  useEffect(() => {
+    const id = setInterval(() => setMsgIndex((i) => (i + 1) % CURSI_MESSAGES.length), 4000);
+    return () => clearInterval(id);
   }, []);
 
   const handleSelectUser = async (name: "alejandro" | "rut") => {
@@ -177,6 +221,94 @@ export default function SplashPage() {
             {dateStr}
           </p>
         </motion.div>
+
+        {/* Countdown */}
+        {!countdown.done && (
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75, duration: 0.45 }}
+            style={{
+              marginTop: 22,
+              background: "linear-gradient(135deg, #fff0f3 0%, #fff5f0 100%)",
+              border: "1px solid rgba(255,45,85,0.15)",
+              borderRadius: 20,
+              padding: "14px 18px",
+              boxShadow: "0 4px 20px rgba(255,45,85,0.1)",
+              textAlign: "center",
+              width: "100%",
+              maxWidth: 340,
+            }}
+          >
+            {/* Floating hearts row */}
+            <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 8 }}>
+              {["💗", "🩷", "❤️", "🩷", "💗"].map((h, i) => (
+                <motion.span
+                  key={i}
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.25, ease: "easeInOut" }}
+                  style={{ fontSize: 16 }}
+                >
+                  {h}
+                </motion.span>
+              ))}
+            </div>
+
+            {/* Rotating romantic message */}
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={msgIndex}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.4 }}
+                style={{ fontSize: 11, fontWeight: 600, color: "#FF2D55", letterSpacing: "0.04em", margin: "0 0 12px", lineHeight: 1.4 }}
+              >
+                {CURSI_MESSAGES[msgIndex]}
+              </motion.p>
+            </AnimatePresence>
+
+            {/* Countdown tiles */}
+            <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+              {[
+                { value: countdown.days,    label: "días" },
+                { value: countdown.hours,   label: "horas" },
+                { value: countdown.minutes, label: "min" },
+                { value: countdown.seconds, label: "seg" },
+              ].map(({ value, label }) => (
+                <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                  <motion.div
+                    key={value}
+                    initial={{ scale: 1.15, opacity: 0.7 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                    style={{
+                      width: label === "días" ? 52 : 44,
+                      height: label === "días" ? 52 : 44,
+                      background: "white",
+                      borderRadius: 12,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      boxShadow: "0 2px 10px rgba(255,45,85,0.12)",
+                      border: "1px solid rgba(255,45,85,0.1)",
+                    }}
+                  >
+                    <span style={{ fontSize: label === "días" ? 20 : 17, fontWeight: 800, color: "#FF2D55", fontVariantNumeric: "tabular-nums" }}>
+                      {String(value).padStart(2, "0")}
+                    </span>
+                  </motion.div>
+                  <span style={{ fontSize: 9, fontWeight: 600, color: "#FF2D55", opacity: 0.6, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Date note */}
+            <p style={{ fontSize: 10, color: "#FF2D55", opacity: 0.5, margin: "10px 0 0", letterSpacing: "0.05em" }}>
+              16 de abril · Italia 🇮🇹
+            </p>
+          </motion.div>
+        )}
 
         {/* Dots */}
         <motion.div
