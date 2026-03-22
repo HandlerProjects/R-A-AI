@@ -17,28 +17,42 @@ interface Destination {
   name: string;
   country: string;
   category: string;
-  photo: string;
-  custom?: boolean;
+  photos: string[];
 }
 
 const CATEGORIES = ["Todos", "Romántico", "Playa", "Ciudad", "Aventura", "Escapada"];
 
-const Q = "?auto=format&fit=crop&w=400&q=82";
 const U = "https://images.unsplash.com/photo-";
+const QS = "?auto=format&fit=crop&w=800&q=85";
+const QT = "?auto=format&fit=crop&w=400&q=80";
+
+const p = (id: string) => `${U}${id}`;
 
 const DESTINATIONS: Destination[] = [
-  { id: "santorini",  name: "Santorini",     country: "Grecia",           category: "Romántico", photo: `${U}1533105079780-92b9be482077${Q}` },
-  { id: "praga",      name: "Praga",          country: "República Checa",  category: "Ciudad",    photo: `${U}1541849546-216549ae216d${Q}` },
-  { id: "dubrovnik",  name: "Dubrovnik",      country: "Croacia",          category: "Playa",     photo: `${U}1555990538-1e2a90a1acc9${Q}` },
-  { id: "lisboa",     name: "Lisboa",         country: "Portugal",         category: "Ciudad",    photo: `${U}1513735492246-483525079686${Q}` },
-  { id: "amsterdam",  name: "Amsterdam",      country: "Países Bajos",     category: "Ciudad",    photo: `${U}1534351590666-13e3e96b5017${Q}` },
-  { id: "amalfi",     name: "Costa Amalfi",   country: "Italia",           category: "Romántico", photo: `${U}1548199973-03cce0bbc87b${Q}` },
-  { id: "budapest",   name: "Budapest",       country: "Hungría",          category: "Escapada",  photo: `${U}1506905925346-21bda4d32df4${Q}` },
-  { id: "islandia",   name: "Islandia",       country: "Islandia",         category: "Aventura",  photo: `${U}1531366936337-7c912a4589a7${Q}` },
-  { id: "marrakech",  name: "Marrakech",      country: "Marruecos",        category: "Aventura",  photo: `${U}1539020140153-d25072e53f95${Q}` },
-  { id: "florencia",  name: "Florencia",      country: "Italia",           category: "Romántico", photo: `${U}1543332164-6e82f3e4d042${Q}` },
-  { id: "viena",      name: "Viena",          country: "Austria",          category: "Escapada",  photo: `${U}1516550893923-42d28e5677af${Q}` },
-  { id: "mykonos",    name: "Mykonos",        country: "Grecia",           category: "Playa",     photo: `${U}1601581975053-8b05e8ee7e85${Q}` },
+  { id: "santorini", name: "Santorini",   country: "Grecia",          category: "Romántico",
+    photos: [`${p("1533105079780-92b9be482077")}${QS}`, `${p("1570077188670-e3a8d69ac5ff")}${QS}`, `${p("1597466759161-ba5ba9db34a3")}${QS}`] },
+  { id: "praga",     name: "Praga",       country: "República Checa", category: "Ciudad",
+    photos: [`${p("1541849546-216549ae216d")}${QS}`, `${p("1519677100203-a0e668c92439")}${QS}`, `${p("1592906209472-a36b1f3782ef")}${QS}`] },
+  { id: "dubrovnik", name: "Dubrovnik",   country: "Croacia",         category: "Playa",
+    photos: [`${p("1555990538-1e2a90a1acc9")}${QS}`, `${p("1607434472573-b3a2a5b0e14d")}${QS}`, `${p("1590076084931-3f4568abcb52")}${QS}`] },
+  { id: "lisboa",    name: "Lisboa",      country: "Portugal",        category: "Ciudad",
+    photos: [`${p("1513735492246-483525079686")}${QS}`, `${p("1555881400-74d7acaacd8b")}${QS}`, `${p("1558618666-fcd25c85cd64")}${QS}`] },
+  { id: "amsterdam", name: "Amsterdam",   country: "Países Bajos",    category: "Ciudad",
+    photos: [`${p("1534351590666-13e3e96b5017")}${QS}`, `${p("1519922639-96bff4c4cc26")}${QS}`, `${p("1576595580361-90a4a8eef1b1")}${QS}`] },
+  { id: "amalfi",    name: "Costa Amalfi",country: "Italia",          category: "Romántico",
+    photos: [`${p("1548199973-03cce0bbc87b")}${QS}`, `${p("1621155346337-1d19476ba7d6")}${QS}`, `${p("1499678567629-c1a1ee493e24")}${QS}`] },
+  { id: "budapest",  name: "Budapest",    country: "Hungría",         category: "Escapada",
+    photos: [`${p("1506905925346-21bda4d32df4")}${QS}`, `${p("1570096881776-65fe4c86c700")}${QS}`, `${p("1587974928338-b4c02df1fe72")}${QS}`] },
+  { id: "islandia",  name: "Islandia",    country: "Islandia",        category: "Aventura",
+    photos: [`${p("1531366936337-7c912a4589a7")}${QS}`, `${p("1520769945061-0a448c463865")}${QS}`, `${p("1476514525535-07fb3b4ae5f1")}${QS}`] },
+  { id: "marrakech", name: "Marrakech",   country: "Marruecos",       category: "Aventura",
+    photos: [`${p("1539020140153-d25072e53f95")}${QS}`, `${p("1493246507537-4e3e5e0df2eb")}${QS}`, `${p("1512632578888-169bbbc64f33")}${QS}`] },
+  { id: "florencia", name: "Florencia",   country: "Italia",          category: "Romántico",
+    photos: [`${p("1543332164-6e82f3e4d042")}${QS}`, `${p("1534259173219-43c2b3db6b4b")}${QS}`, `${p("1516483638261-f4dbaf036963")}${QS}`] },
+  { id: "viena",     name: "Viena",       country: "Austria",         category: "Escapada",
+    photos: [`${p("1516550893923-42d28e5677af")}${QS}`, `${p("1573059864197-7f2afce18e46")}${QS}`, `${p("1558369981-f9ca78462879")}${QS}`] },
+  { id: "mykonos",   name: "Mykonos",     country: "Grecia",          category: "Playa",
+    photos: [`${p("1601581975053-8b05e8ee7e85")}${QS}`, `${p("1578662996442-48f60103fc96")}${QS}`, `${p("1555400396-8f50ac44a4a6")}${QS}`] },
 ];
 
 const BUDGETS = ["< 300€", "300–700€", "700–1500€", "+1500€"];
@@ -61,6 +75,8 @@ export default function ViajesPage() {
   const [customDestinations, setCustomDestinations] = useState<Destination[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [modalDest, setModalDest] = useState<Destination | null>(null);
+  const [modalPhotoIdx, setModalPhotoIdx] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isAlejandro = userParam === "alejandro";
@@ -89,16 +105,28 @@ export default function ViajesPage() {
   const addCustomDestination = () => {
     const trimmed = customDestInput.trim();
     if (!trimmed) return;
+    const kw = encodeURIComponent(trimmed);
     const newDest: Destination = {
       id: `custom-${Date.now()}`,
       name: trimmed,
       country: "Destino propio",
       category: "Destino propio",
-      photo: `https://source.unsplash.com/featured/400x300/?${encodeURIComponent(trimmed)},travel,landscape`,
+      photos: [
+        `https://source.unsplash.com/featured/800x600/?${kw},travel&sig=1`,
+        `https://source.unsplash.com/featured/800x600/?${kw},landscape&sig=2`,
+        `https://source.unsplash.com/featured/800x600/?${kw},city&sig=3`,
+      ],
     };
     setCustomDestinations((prev) => [...prev, newDest]);
     setCustomDestInput("");
   };
+
+  const openModal = (dest: Destination) => {
+    setModalDest(dest);
+    setModalPhotoIdx(0);
+  };
+
+  const closeModal = () => setModalDest(null);
 
   const selectedNames = selectedDestinations.map((id) => {
     const dest = allDestinations.find((d) => d.id === id);
@@ -566,7 +594,7 @@ export default function ViajesPage() {
                     delay: i * 0.04,
                   }}
                   whileTap={{ scale: 0.96 }}
-                  onClick={() => toggleDestination(dest.id)}
+                  onClick={() => openModal(dest)}
                   style={{
                     position: "relative",
                     height: 160,
@@ -574,9 +602,7 @@ export default function ViajesPage() {
                     border: isSelected ? `2px solid ${ACCENT}` : "2px solid transparent",
                     overflow: "hidden",
                     cursor: "pointer",
-                    background: dest.custom
-                      ? "linear-gradient(135deg, #FF2D55 0%, #FF6B35 100%)"
-                      : "#e0e0e0",
+                    background: "#e0e0e0",
                     boxShadow: isSelected
                       ? `0 4px 20px rgba(255,45,85,0.35)`
                       : "0 2px 12px rgba(0,0,0,0.1)",
@@ -586,9 +612,9 @@ export default function ViajesPage() {
                   }}
                 >
                   {/* Background image */}
-                  {dest.photo && (
+                  {dest.photos[0] && (
                     <img
-                      src={dest.photo}
+                      src={dest.photos[0]}
                       alt={dest.name}
                       loading="lazy"
                       onError={(e) => {
@@ -605,7 +631,7 @@ export default function ViajesPage() {
                   )}
 
                   {/* Gradient overlay */}
-                  {dest.photo && (
+                  {dest.photos[0] && (
                     <div
                       style={{
                         position: "absolute",
@@ -682,7 +708,7 @@ export default function ViajesPage() {
                         color: "white",
                         lineHeight: 1.2,
                         letterSpacing: "-0.2px",
-                        textShadow: dest.custom ? "none" : "0 1px 4px rgba(0,0,0,0.3)",
+                        textShadow: "0 1px 4px rgba(0,0,0,0.3)",
                       }}
                     >
                       {dest.name}
@@ -693,7 +719,7 @@ export default function ViajesPage() {
                         fontSize: 11,
                         color: "rgba(255,255,255,0.8)",
                         fontWeight: 500,
-                        textShadow: dest.custom ? "none" : "0 1px 3px rgba(0,0,0,0.3)",
+                        textShadow: "0 1px 3px rgba(0,0,0,0.3)",
                       }}
                     >
                       {dest.country}
@@ -904,6 +930,148 @@ export default function ViajesPage() {
           )}
         </motion.button>
       </div>
+
+      {/* ── DESTINATION MODAL ─────────────────────────────── */}
+      <AnimatePresence>
+        {modalDest && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 500,
+              background: "rgba(0,0,0,0.88)",
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "flex-end",
+            }}
+            onClick={closeModal}
+          >
+            <motion.div
+              initial={{ y: 80, opacity: 0, scale: 0.97 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 60, opacity: 0, scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 340, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "100%", maxWidth: 520,
+                background: "#1A1A1A",
+                borderRadius: "28px 28px 0 0",
+                overflow: "hidden",
+                paddingBottom: `calc(24px + env(safe-area-inset-bottom))`,
+              }}
+            >
+              {/* Photo area with swipe */}
+              <div style={{ position: "relative", width: "100%", height: 320, background: "#111", overflow: "hidden" }}>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={modalPhotoIdx}
+                    initial={{ opacity: 0, x: 40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -40 }}
+                    transition={{ duration: 0.25 }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.x < -50 && modalPhotoIdx < modalDest.photos.length - 1) setModalPhotoIdx(i => i + 1);
+                      if (info.offset.x > 50 && modalPhotoIdx > 0) setModalPhotoIdx(i => i - 1);
+                    }}
+                    style={{ width: "100%", height: "100%", cursor: "grab" }}
+                  >
+                    <img
+                      src={modalDest.photos[modalPhotoIdx]}
+                      alt={modalDest.name}
+                      onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Gradient overlay */}
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(26,26,26,0.9) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)", pointerEvents: "none" }} />
+
+                {/* X button */}
+                <button
+                  onClick={closeModal}
+                  style={{
+                    position: "absolute", top: 16, right: 16,
+                    width: 34, height: 34, borderRadius: "50%",
+                    background: "rgba(0,0,0,0.5)", border: "none",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer", backdropFilter: "blur(8px)",
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+                  </svg>
+                </button>
+
+                {/* Photo counter */}
+                <div style={{ position: "absolute", top: 16, left: 16, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(8px)", borderRadius: 20, padding: "4px 10px" }}>
+                  <span style={{ fontSize: 12, color: "white", fontWeight: 600 }}>{modalPhotoIdx + 1} / {modalDest.photos.length}</span>
+                </div>
+
+                {/* Dot indicators */}
+                <div style={{ position: "absolute", bottom: 70, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6 }}>
+                  {modalDest.photos.map((_, i) => (
+                    <motion.button
+                      key={i}
+                      onClick={() => setModalPhotoIdx(i)}
+                      animate={{ width: i === modalPhotoIdx ? 20 : 6, opacity: i === modalPhotoIdx ? 1 : 0.45 }}
+                      style={{ height: 6, borderRadius: 3, background: "white", border: "none", cursor: "pointer", padding: 0 }}
+                    />
+                  ))}
+                </div>
+
+                {/* Destination name overlay */}
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 20px" }}>
+                  <p style={{ margin: 0, fontSize: 26, fontWeight: 800, color: "white", letterSpacing: "-0.5px" }}>{modalDest.name}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 500 }}>{modalDest.country} · {modalDest.category}</p>
+                </div>
+              </div>
+
+              {/* Arrow nav */}
+              <div style={{ display: "flex", justifyContent: "center", gap: 12, padding: "16px 20px 4px" }}>
+                {[{ dir: -1, label: "←" }, { dir: 1, label: "→" }].map(({ dir, label }) => (
+                  <button
+                    key={dir}
+                    onClick={() => setModalPhotoIdx(i => Math.max(0, Math.min(modalDest.photos.length - 1, i + dir)))}
+                    style={{
+                      width: 44, height: 44, borderRadius: "50%",
+                      background: "rgba(255,255,255,0.08)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      color: "white", fontSize: 18, cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Select button */}
+              <div style={{ padding: "12px 20px 0" }}>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => { toggleDestination(modalDest.id); closeModal(); }}
+                  style={{
+                    width: "100%", height: 54, borderRadius: 18, border: "none",
+                    background: selectedDestinations.includes(modalDest.id)
+                      ? "rgba(255,255,255,0.1)"
+                      : `linear-gradient(135deg, ${ACCENT} 0%, #FF6B35 100%)`,
+                    color: "white", fontSize: 16, fontWeight: 700,
+                    cursor: "pointer",
+                    boxShadow: selectedDestinations.includes(modalDest.id) ? "none" : "0 4px 20px rgba(255,45,85,0.4)",
+                    border: selectedDestinations.includes(modalDest.id) ? "1px solid rgba(255,255,255,0.15)" : "none",
+                  }}
+                >
+                  {selectedDestinations.includes(modalDest.id) ? "✓ Seleccionado — quitar" : "Seleccionar destino"}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
