@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
+import { NotificationCard } from "@/components/NotificationCard";
 
 const SHARED_MODULES = [
   { id: "plans", icon: "💑", title: "Planes", description: "Cread el plan perfecto juntos", color: "linear-gradient(135deg, #FF2D55 0%, #FF6B35 100%)" },
@@ -182,6 +183,9 @@ export default function HomePage() {
           </div>
         </section>
       </div>
+
+      {/* Push notification card */}
+      {!countdown?.done && <NotificationCard userName={userParam} />}
 
       {/* Bottom Nav */}
       <BottomNav userParam={userParam} router={router} />
