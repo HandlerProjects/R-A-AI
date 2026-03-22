@@ -62,9 +62,10 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-outfit), -apple-system, "Helvetica Neue", Arial, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
+  letter-spacing: 0.01em;
 }
 
 /* Scrollbar hidden */

@@ -1,5 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { Outfit } from "next/font/google";
 import "./globals.css";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-outfit",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "R&A — Your Personal AI",
@@ -20,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1D1D1F",
+  themeColor: "#F2F2F7",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -28,21 +36,11 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
-      <body>
-        <main
-          style={{
-            height: "100dvh",
-            overflow: "hidden",
-            position: "relative",
-          }}
-        >
+    <html lang="es" className={outfit.variable}>
+      <body style={{ fontFamily: "var(--font-outfit), -apple-system, sans-serif" }}>
+        <main style={{ height: "100dvh", overflow: "hidden", position: "relative" }}>
           {children}
         </main>
       </body>
