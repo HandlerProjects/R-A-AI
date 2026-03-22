@@ -17,25 +17,28 @@ interface Destination {
   name: string;
   country: string;
   category: string;
-  keyword: string;
+  photo: string;
   custom?: boolean;
 }
 
 const CATEGORIES = ["Todos", "Romántico", "Playa", "Ciudad", "Aventura", "Escapada"];
 
+const Q = "?auto=format&fit=crop&w=400&q=82";
+const U = "https://images.unsplash.com/photo-";
+
 const DESTINATIONS: Destination[] = [
-  { id: "santorini", name: "Santorini", country: "Grecia", category: "Romántico", keyword: "santorini,greece,island" },
-  { id: "praga", name: "Praga", country: "República Checa", category: "Ciudad", keyword: "prague,czech,city" },
-  { id: "dubrovnik", name: "Dubrovnik", country: "Croacia", category: "Playa", keyword: "dubrovnik,croatia,sea" },
-  { id: "lisboa", name: "Lisboa", country: "Portugal", category: "Ciudad", keyword: "lisbon,portugal,city" },
-  { id: "amsterdam", name: "Amsterdam", country: "Países Bajos", category: "Ciudad", keyword: "amsterdam,netherlands,canal" },
-  { id: "amalfi", name: "Costa Amalfi", country: "Italia", category: "Romántico", keyword: "amalfi,italy,coast" },
-  { id: "budapest", name: "Budapest", country: "Hungría", category: "Escapada", keyword: "budapest,hungary,night" },
-  { id: "islandia", name: "Islandia", country: "Islandia", category: "Aventura", keyword: "iceland,northern,lights" },
-  { id: "marrakech", name: "Marrakech", country: "Marruecos", category: "Aventura", keyword: "marrakech,morocco,market" },
-  { id: "florencia", name: "Florencia", country: "Italia", category: "Romántico", keyword: "florence,italy,duomo" },
-  { id: "viena", name: "Viena", country: "Austria", category: "Escapada", keyword: "vienna,austria,palace" },
-  { id: "mykonos", name: "Mykonos", country: "Grecia", category: "Playa", keyword: "mykonos,greece,white" },
+  { id: "santorini",  name: "Santorini",     country: "Grecia",           category: "Romántico", photo: `${U}1533105079780-92b9be482077${Q}` },
+  { id: "praga",      name: "Praga",          country: "República Checa",  category: "Ciudad",    photo: `${U}1541849546-216549ae216d${Q}` },
+  { id: "dubrovnik",  name: "Dubrovnik",      country: "Croacia",          category: "Playa",     photo: `${U}1555990538-1e2a90a1acc9${Q}` },
+  { id: "lisboa",     name: "Lisboa",         country: "Portugal",         category: "Ciudad",    photo: `${U}1513735492246-483525079686${Q}` },
+  { id: "amsterdam",  name: "Amsterdam",      country: "Países Bajos",     category: "Ciudad",    photo: `${U}1534351590666-13e3e96b5017${Q}` },
+  { id: "amalfi",     name: "Costa Amalfi",   country: "Italia",           category: "Romántico", photo: `${U}1548199973-03cce0bbc87b${Q}` },
+  { id: "budapest",   name: "Budapest",       country: "Hungría",          category: "Escapada",  photo: `${U}1506905925346-21bda4d32df4${Q}` },
+  { id: "islandia",   name: "Islandia",       country: "Islandia",         category: "Aventura",  photo: `${U}1531366936337-7c912a4589a7${Q}` },
+  { id: "marrakech",  name: "Marrakech",      country: "Marruecos",        category: "Aventura",  photo: `${U}1539020140153-d25072e53f95${Q}` },
+  { id: "florencia",  name: "Florencia",      country: "Italia",           category: "Romántico", photo: `${U}1543332164-6e82f3e4d042${Q}` },
+  { id: "viena",      name: "Viena",          country: "Austria",          category: "Escapada",  photo: `${U}1516550893923-42d28e5677af${Q}` },
+  { id: "mykonos",    name: "Mykonos",        country: "Grecia",           category: "Playa",     photo: `${U}1601581975053-8b05e8ee7e85${Q}` },
 ];
 
 const BUDGETS = ["< 300€", "300–700€", "700–1500€", "+1500€"];
@@ -545,9 +548,12 @@ export default function ViajesPage() {
                   {/* Background image */}
                   {!dest.custom && (
                     <img
-                      src={`https://source.unsplash.com/featured/400x300/?${dest.keyword}`}
+                      src={dest.photo}
                       alt={dest.name}
                       loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
                       style={{
                         position: "absolute",
                         inset: 0,
