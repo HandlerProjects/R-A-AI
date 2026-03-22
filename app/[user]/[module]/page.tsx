@@ -26,6 +26,7 @@ const MODULE_TITLES: Record<string, { title: string; icon: string }> = {
   plans: { title: "Planes de pareja", icon: "💑" },
   italian: { title: "Italiano", icon: "🇮🇹" },
   chat: { title: "Chat libre R&A", icon: "💬" },
+  viajes: { title: "Viajes", icon: "🌍" },
 };
 
 export default function ModulePage() {

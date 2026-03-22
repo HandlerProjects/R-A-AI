@@ -10,6 +10,7 @@ const SHARED_MODULES = [
   { id: "plans", icon: "💑", title: "Planes", description: "Cread el plan perfecto juntos", color: "linear-gradient(135deg, #FF2D55 0%, #FF6B35 100%)" },
   { id: "italian", icon: "🇮🇹", title: "Italiano", description: "Aprended juntos o por separado", color: "linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%)" },
   { id: "chat", icon: "💬", title: "Chat R&A", description: "IA con contexto de los dos", color: "linear-gradient(135deg, #AF52DE 0%, #FF2D55 100%)" },
+  { id: "viajes", icon: "🌍", title: "Viajes", description: "Descubrid el mundo juntos", color: "linear-gradient(135deg, #007AFF 0%, #34C759 100%)" },
 ];
 
 const ALEJANDRO_MODULES = [
