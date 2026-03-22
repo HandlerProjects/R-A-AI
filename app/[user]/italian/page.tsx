@@ -136,7 +136,7 @@ export default function ItalianPage() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       if (transcript.trim()) send(transcript.trim());
     };
