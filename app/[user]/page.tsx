@@ -171,7 +171,7 @@ export default function HomePage() {
         </section>
 
         {/* OWN MODULES */}
-        <section>
+        <section style={{ marginBottom: 24 }}>
           <SectionLabel text="Tus módulos" />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {ownModules.map((mod, i) => (
@@ -184,6 +184,56 @@ export default function HomePage() {
               />
             ))}
           </div>
+        </section>
+
+        {/* VER PERFIL DEL OTRO */}
+        <section>
+          <SectionLabel text={isAlejandro ? "Ver a Rut" : "Ver a Alejandro"} />
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, type: "spring", stiffness: 280, damping: 24 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => router.push(isAlejandro ? "/rut" : "/alejandro")}
+            style={{
+              width: "100%",
+              background: isAlejandro
+                ? "linear-gradient(135deg, #FF2D55 0%, #AF52DE 100%)"
+                : "linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%)",
+              border: "none",
+              borderRadius: 18,
+              padding: "16px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              cursor: "pointer",
+              textAlign: "left",
+              boxShadow: "0 4px 18px rgba(0,0,0,0.15)",
+            }}
+          >
+            <div style={{
+              width: 44, height: 44, borderRadius: "50%",
+              background: "rgba(255,255,255,0.15)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              overflow: "hidden", flexShrink: 0,
+            }}>
+              <img
+                src={isAlejandro ? "/avatar_rut.png" : "/avatar_alejandro.png"}
+                alt={isAlejandro ? "Rut" : "Alejandro"}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+            </div>
+            <div>
+              <p style={{ fontSize: 15, fontWeight: 700, color: "white", margin: 0 }}>
+                {isAlejandro ? "Ver todo de Rut" : "Ver todo de Alejandro"}
+              </p>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", margin: "2px 0 0" }}>
+                Módulos, conversaciones y más
+              </p>
+            </div>
+            <div style={{ marginLeft: "auto", color: "rgba(255,255,255,0.5)", fontSize: 20 }}>›</div>
+          </motion.button>
         </section>
       </div>
 
