@@ -8,6 +8,16 @@ import { loadDetalles, loadSueno, type Detalle } from "@/lib/yopuedo";
 const ACCENT = "#AF52DE";
 const ACCENT2 = "#FF2D55";
 const RUT_USER_ID = "rut";
+const PUSH_KEY = "ra_push_v2";
+
+function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const arr = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) arr[i] = rawData.charCodeAt(i);
+  return arr.buffer as ArrayBuffer;
+}
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -34,6 +44,37 @@ export default function RutPage() {
   const [detalles, setDetalles] = useState<Detalle[]>([]);
   const [sueno, setSueno] = useState("");
   const [loading, setLoading] = useState(true);
+  const [pushStatus, setPushStatus] = useState<"idle" | "loading" | "granted" | "denied">("idle");
+
+  useEffect(() => {
+    const stored = localStorage.getItem(PUSH_KEY);
+    if (stored === "granted") setPushStatus("granted");
+    else if (Notification.permission === "denied") setPushStatus("denied");
+  }, []);
+
+  const handleEnablePush = async () => {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+    setPushStatus("loading");
+    try {
+      const reg = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") { setPushStatus("idle"); return; }
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+      });
+      await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription: sub.toJSON(), userName: "alejandro" }),
+      });
+      localStorage.setItem(PUSH_KEY, "granted");
+      setPushStatus("granted");
+    } catch {
+      setPushStatus("idle");
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -100,6 +141,49 @@ export default function RutPage() {
               {hasToday ? "✓ Escribió hoy" : "Aún no hoy"}
             </span>
           </div>
+        </div>
+
+        {/* Push notification row */}
+        <div style={{ marginTop: 10 }}>
+          {pushStatus === "granted" ? (
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(52,199,89,0.1)", border: "1px solid rgba(52,199,89,0.25)", borderRadius: 20, padding: "5px 12px" }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#34C759" }} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: "#34C759" }}>Notificaciones activadas</span>
+            </div>
+          ) : pushStatus === "denied" ? (
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: 20, padding: "5px 12px" }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "#FF3B30" }}>Notificaciones bloqueadas — actívalas en ajustes</span>
+            </div>
+          ) : (
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={handleEnablePush}
+              disabled={pushStatus === "loading"}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 7,
+                background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT2} 100%)`,
+                border: "none", borderRadius: 20, padding: "7px 14px",
+                cursor: "pointer", boxShadow: "0 2px 10px rgba(175,82,222,0.3)",
+              }}
+            >
+              {pushStatus === "loading" ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.7, repeat: Infinity, ease: "linear" }}
+                  style={{ width: 12, height: 12, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%" }}
+                />
+              ) : (
+                <motion.span
+                  animate={{ rotate: [0, -15, 15, -10, 10, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
+                  style={{ fontSize: 13 }}
+                >🔔</motion.span>
+              )}
+              <span style={{ fontSize: 12, fontWeight: 600, color: "white" }}>
+                {pushStatus === "loading" ? "Activando…" : "Avisarme cuando escriba"}
+              </span>
+            </motion.button>
+          )}
         </div>
       </motion.div>
 
