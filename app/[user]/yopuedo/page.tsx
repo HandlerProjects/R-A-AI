@@ -19,12 +19,38 @@ interface Detalle {
   date: string; // YYYY-MM-DD
 }
 
+interface Particle {
+  id: number;
+  emoji: string;
+  x: number;   // vw starting position
+  dx: number;  // horizontal drift
+  dy: number;  // vertical travel
+  size: number;
+  delay: number;
+  rotate: number;
+}
+
 const ACCENT = "#AF52DE";
 const ACCENT2 = "#FF2D55";
 
 const TOTAL_KEY = "rut_detalles_total";
 const DETALLES_KEY = "rut_detalles_list";
 const SUENO_KEY = "rut_sueno";
+
+const BURST_EMOJIS = ["💗", "✨", "🌟", "🩷", "💜", "⭐", "💫", "🌸"];
+
+function makeParticles(): Particle[] {
+  return Array.from({ length: 16 }, (_, i) => ({
+    id: i,
+    emoji: BURST_EMOJIS[i % BURST_EMOJIS.length],
+    x: 20 + Math.random() * 60,         // spread across 20–80vw
+    dx: (Math.random() - 0.5) * 120,    // ±60px horizontal drift
+    dy: -(120 + Math.random() * 200),   // fly upward 120–320px
+    size: 16 + Math.random() * 14,      // 16–30px
+    delay: Math.random() * 0.25,        // stagger 0–250ms
+    rotate: (Math.random() - 0.5) * 60,
+  }));
+}
 
 const EXAMPLE_HINTS = [
   "Hoy he hecho que alguien se fuera contenta…",
@@ -62,6 +88,7 @@ export default function YoPuedoPage() {
   const [inputText, setInputText] = useState("");
   const [hintIndex, setHintIndex] = useState(0);
   const [justAdded, setJustAdded] = useState(false);
+  const [particles, setParticles] = useState<Particle[]>([]);
 
   // ─── Sueño state ─────────────────────────────────────────────────────────────
   const [sueno, setSueno] = useState("");
@@ -107,7 +134,11 @@ export default function YoPuedoPage() {
 
     setInputText("");
     setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 2000);
+    setTimeout(() => setJustAdded(false), 2200);
+
+    // Fire particle burst
+    setParticles(makeParticles());
+    setTimeout(() => setParticles([]), 1600);
   };
 
   const saveSueno = () => {
@@ -633,6 +664,29 @@ export default function YoPuedoPage() {
             </div>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Particle burst overlay */}
+      <AnimatePresence>
+        {particles.map((p) => (
+          <motion.div
+            key={p.id}
+            initial={{ opacity: 1, y: 0, x: 0, scale: 0.3, rotate: 0 }}
+            animate={{ opacity: 0, y: p.dy, x: p.dx, scale: 1, rotate: p.rotate }}
+            transition={{ duration: 1.1, delay: p.delay, ease: [0.2, 0.8, 0.4, 1] }}
+            style={{
+              position: "fixed",
+              bottom: "30%",
+              left: `${p.x}vw`,
+              fontSize: p.size,
+              pointerEvents: "none",
+              zIndex: 999,
+              userSelect: "none",
+            }}
+          >
+            {p.emoji}
+          </motion.div>
+        ))}
       </AnimatePresence>
 
       {/* Bottom Nav */}
