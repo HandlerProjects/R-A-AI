@@ -13,6 +13,8 @@ interface Message {
   content: string;
 }
 
+const SHARED_MODULES = ["plans", "italian", "chat", "viajes"];
+
 const MODULE_TITLES: Record<string, { title: string; icon: string }> = {
   outfits: { title: "Outfits", icon: "👔" },
   comidas: { title: "Comidas", icon: "🥗" },
@@ -45,6 +47,8 @@ export default function ModulePage() {
   const moduleInfo = MODULE_TITLES[moduleParam] ?? { title: moduleParam, icon: "💬" };
   const isAlejandro = userParam === "alejandro";
   const accentColor = isAlejandro ? "#1C1C1E" : "#FF2D55";
+  const isSharedModule = SHARED_MODULES.includes(moduleParam);
+  const effectiveUserId = isSharedModule ? "shared" : (userId ?? userParam);
 
   useEffect(() => {
     if (userParam && userParam !== activeUser) setUser(userParam, userParam);
@@ -52,10 +56,9 @@ export default function ModulePage() {
 
   useEffect(() => {
     const loadHistory = async () => {
-      const resolvedUserId = userId ?? userParam;
-      if (!resolvedUserId) return;
+      if (!effectiveUserId) return;
       try {
-        const conv = await loadConversation(resolvedUserId, moduleParam);
+        const conv = await loadConversation(effectiveUserId, moduleParam);
         if (conv && conv.messages.length > 0) {
           setMessages(conv.messages as Message[]);
           setConversationId(conv.id);
@@ -63,7 +66,7 @@ export default function ModulePage() {
       } catch {}
     };
     loadHistory();
-  }, [userId, userParam, moduleParam]);
+  }, [effectiveUserId, moduleParam]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -75,13 +78,12 @@ export default function ModulePage() {
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setIsLoading(true);
-    const resolvedUserId = userId ?? userParam;
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: updatedMessages, userId: resolvedUserId, userName: userParam, module: moduleParam }),
+        body: JSON.stringify({ messages: updatedMessages, userId: effectiveUserId, userName: userParam, module: moduleParam }),
       });
 
       if (!response.ok || !response.body) throw new Error();
@@ -113,7 +115,7 @@ export default function ModulePage() {
       }
 
       try {
-        await saveConversation(resolvedUserId, moduleParam, [...updatedMessages, { role: "assistant", content: assistantContent }], conversationId);
+        await saveConversation(effectiveUserId, moduleParam, [...updatedMessages, { role: "assistant", content: assistantContent }], conversationId);
       } catch {}
     } catch {
       setIsLoading(false);
@@ -152,7 +154,7 @@ export default function ModulePage() {
             <span style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", fontFamily: "-apple-system, 'SF Pro Display', sans-serif" }}>{moduleInfo.title}</span>
           </div>
           <p style={{ fontSize: 12, color: "var(--text-tertiary)", margin: 0 }}>
-            R&A · {isAlejandro ? "Alejandro" : "Rut"}
+            {isSharedModule ? "Alejandro & Rut · Compartido" : `R&A · ${isAlejandro ? "Alejandro" : "Rut"}`}
           </p>
         </div>
 
