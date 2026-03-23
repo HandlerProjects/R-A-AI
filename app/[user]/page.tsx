@@ -14,13 +14,13 @@ const SHARED_MODULES = [
 ];
 
 const ALEJANDRO_MODULES = [
+  { id: "rut", icon: "💗", title: "Rut", description: "Sus pequeños detalles" },
   { id: "proyectos", icon: "🚀", title: "Proyectos", description: "APISA, Autoescuela, SOLØN..." },
   { id: "outfits", icon: "👔", title: "Outfits", description: "Armario y combinaciones" },
   { id: "comidas", icon: "🥗", title: "Comidas", description: "Nutrición y recetas" },
   { id: "posts", icon: "📱", title: "Posts", description: "Instagram y LinkedIn" },
   { id: "prompts", icon: "✍️", title: "Prompts", description: "Para todas las IAs" },
   { id: "psicologo", icon: "🧘", title: "Psicólogo", description: "Tu espacio privado" },
-  { id: "automatizaciones", icon: "⚙️", title: "Automatizaciones", description: "n8n y flujos" },
 ];
 
 const RUT_MODULES = [
