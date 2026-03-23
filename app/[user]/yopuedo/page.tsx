@@ -126,6 +126,12 @@ export default function YoPuedoPage() {
     const saved = await saveDetalle(resolvedUserId, text, todayStr());
     if (saved) {
       setDetalles((prev) => [saved, ...prev]);
+      // Notify Alejandro silently — fire and forget
+      fetch("/api/push/rut-detalle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preview: text }),
+      }).catch(() => {});
     }
   };
 
