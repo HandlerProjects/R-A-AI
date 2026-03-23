@@ -15,6 +15,7 @@ const SHARED_MODULES = [
 
 const ALEJANDRO_MODULES = [
   { id: "rut", icon: "💗", title: "Rut", description: "Sus pequeños detalles" },
+  { id: "cartas", icon: "💌", title: "Cartas", description: "Escríbele cuando quieras" },
   { id: "proyectos", icon: "🚀", title: "Proyectos", description: "APISA, Autoescuela, SOLØN..." },
   { id: "outfits", icon: "👔", title: "Outfits", description: "Armario y combinaciones" },
   { id: "comidas", icon: "🥗", title: "Comidas", description: "Nutrición y recetas" },
@@ -25,6 +26,7 @@ const ALEJANDRO_MODULES = [
 
 const RUT_MODULES = [
   { id: "yopuedo", icon: "✨", title: "Yo puedo", description: "Metas diarias y crecimiento" },
+  { id: "cartas", icon: "💌", title: "Cartas", description: "De Alejandro para ti" },
   { id: "tfg", icon: "🎓", title: "TFG", description: "Redacción, APA, análisis" },
   { id: "estudios", icon: "📚", title: "Estudios", description: "Resúmenes y exámenes" },
   { id: "comidas", icon: "🥗", title: "Comidas", description: "Nutrición y recetas" },
