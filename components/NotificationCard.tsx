@@ -14,12 +14,33 @@ export function NotificationCard({ userName }: NotificationCardProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
   useEffect(() => {
+    // Always silently renew subscription if permission already granted
+    if (
+      Notification.permission === "granted" &&
+      "serviceWorker" in navigator &&
+      "PushManager" in window
+    ) {
+      navigator.serviceWorker.register("/sw.js").then(async (reg) => {
+        await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+        });
+        await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription: sub.toJSON(), userName }),
+        });
+        localStorage.setItem(STORAGE_KEY, "granted");
+      }).catch(() => {});
+      return;
+    }
+
     if (localStorage.getItem(STORAGE_KEY)) return;
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
-    if (Notification.permission === "granted") return;
     const t = setTimeout(() => setVisible(true), 1800);
     return () => clearTimeout(t);
-  }, []);
+  }, [userName]);
 
   const dismiss = () => {
     localStorage.setItem(STORAGE_KEY, "dismissed");
