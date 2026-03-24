@@ -8,6 +8,7 @@ export interface Carta {
   deliver_at: string; // YYYY-MM-DD
   read_at: string | null;
   notified: boolean;
+  favorito: boolean;
   created_at: string;
 }
 
@@ -56,5 +57,12 @@ export async function markCartaRead(cartaId: string): Promise<void> {
   await supabase
     .from("cartas")
     .update({ read_at: new Date().toISOString() })
+    .eq("id", cartaId);
+}
+
+export async function toggleFavorito(cartaId: string, current: boolean): Promise<void> {
+  await supabase
+    .from("cartas")
+    .update({ favorito: !current })
     .eq("id", cartaId);
 }
