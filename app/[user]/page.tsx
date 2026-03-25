@@ -13,6 +13,12 @@ const SHARED_MODULES = [
   { id: "viajes", icon: "🌍", title: "Viajes", description: "Descubrid el mundo juntos", color: "linear-gradient(135deg, #007AFF 0%, #34C759 100%)" },
 ];
 
+const DAILY_MODULES = [
+  { id: "reto", icon: "🎲", title: "Reto del día", description: "El mismo reto para los dos", color: "linear-gradient(135deg, #FF6B35 0%, #FF2D55 100%)" },
+  { id: "pregunta", icon: "❓", title: "Pregunta del día", description: "Responded y comparad", color: "linear-gradient(135deg, #007AFF 0%, #AF52DE 100%)" },
+  { id: "tarro", icon: "🫙", title: "Tarro de momentos", description: "Guardad lo que os importa", color: "linear-gradient(135deg, #AF52DE 0%, #FF9F0A 100%)" },
+];
+
 const ALEJANDRO_MODULES = [
   { id: "rut", icon: "💗", title: "Rut", description: "Sus pequeños detalles" },
   { id: "cartas", icon: "💌", title: "Cartas", description: "Escríbele cuando quieras" },
@@ -154,7 +160,17 @@ export default function HomePage() {
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px", paddingBottom: `calc(84px + env(safe-area-inset-bottom))` }}>
 
-        {/* SHARED MODULES — primero */}
+        {/* DAILY MODULES */}
+        <section style={{ marginBottom: 28 }}>
+          <SectionLabel text="Cada día" />
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {DAILY_MODULES.map((mod, i) => (
+              <SharedModuleCard key={mod.id} mod={mod} userParam={userParam} delay={i * 0.05} router={router} />
+            ))}
+          </div>
+        </section>
+
+        {/* SHARED MODULES */}
         <section style={{ marginBottom: 28 }}>
           <SectionLabel text="Con Rut" />
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
