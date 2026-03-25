@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChatBubble } from "@/components/ChatBubble";
 import { InputBar } from "@/components/InputBar";
 import { useUserStore, UserName } from "@/store/userStore";
-import { saveConversation, loadConversation } from "@/lib/memory";
+import { saveConversation, loadConversation, deleteConversation } from "@/lib/memory";
 
 const MODES = [
   { id: "tfg_busqueda",   icon: "🔍", label: "Búsqueda",   desc: "Encontrar fuentes y artículos" },
@@ -105,7 +105,9 @@ export default function TFGPage() {
     setLoadedModes(new Set());
   };
 
-  const handleClearMode = () => {
+  const handleClearMode = async () => {
+    const id = convIds[activeMode];
+    if (id) await deleteConversation(id);
     setModeMessages((prev) => ({ ...prev, [activeMode]: [] }));
     setConvIds((prev) => ({ ...prev, [activeMode]: undefined }));
   };

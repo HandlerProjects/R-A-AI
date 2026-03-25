@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { saveConversation, loadConversation } from "@/lib/memory";
+import { saveConversation, loadConversation, deleteConversation } from "@/lib/memory";
 
 export interface Message {
   role: "user" | "assistant";
@@ -119,8 +119,16 @@ export function useChatStream({ userId, userName, module, persist = true }: UseC
   const reset = useCallback(() => {
     setMessages([]);
     setIsLoading(false);
-    // No borramos conversationIdRef — el historial sigue en DB
   }, []);
 
-  return { messages, setMessages, isLoading, send, reset };
+  const deleteConv = useCallback(async () => {
+    if (conversationIdRef.current) {
+      await deleteConversation(conversationIdRef.current);
+      conversationIdRef.current = undefined;
+    }
+    setMessages([]);
+    setIsLoading(false);
+  }, []);
+
+  return { messages, setMessages, isLoading, send, reset, deleteConv };
 }

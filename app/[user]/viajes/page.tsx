@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChatBubble } from "@/components/ChatBubble";
 import { InputBar } from "@/components/InputBar";
 import { useUserStore, UserName } from "@/store/userStore";
-import { saveConversation, loadConversation } from "@/lib/memory";
+import { saveConversation, loadConversation, deleteConversation } from "@/lib/memory";
 
 interface Message {
   role: "user" | "assistant";
@@ -401,6 +401,20 @@ export default function ViajesPage() {
               )}
             </div>
           </div>
+          {messages.length > 0 && (
+            <button
+              onClick={async () => {
+                if (conversationIdRef.current) {
+                  await deleteConversation(conversationIdRef.current);
+                  conversationIdRef.current = undefined;
+                }
+                setMessages([]);
+              }}
+              style={{ padding: "6px 12px", borderRadius: 20, background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.06)", color: "var(--text-tertiary)", fontSize: 12, cursor: "pointer", flexShrink: 0 }}
+            >
+              Limpiar
+            </button>
+          )}
         </motion.div>
 
         {/* Messages */}

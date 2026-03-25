@@ -129,7 +129,7 @@ export default function PostsPage() {
     e.target.value = "";
   }, [photos.length]);
 
-  const { messages, isLoading, send } = useChatStream({
+  const { messages, isLoading, send, deleteConv } = useChatStream({
     userId: resolvedUserId,
     userName: userParam,
     module: "posts",
@@ -396,6 +396,12 @@ export default function PostsPage() {
           </div>
           <p style={{ fontSize: 12, color: "var(--text-tertiary)", margin: 0 }}>R&A · {isAlejandro ? "Alejandro" : "Rut"}</p>
         </div>
+        {messages.length > 0 && (
+          <button onClick={deleteConv}
+            style={{ padding: "6px 12px", borderRadius: 20, background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.06)", color: "var(--text-tertiary)", fontSize: 12, cursor: "pointer" }}>
+            Limpiar
+          </button>
+        )}
       </motion.div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "16px 14px", display: "flex", flexDirection: "column", gap: 4 }}>

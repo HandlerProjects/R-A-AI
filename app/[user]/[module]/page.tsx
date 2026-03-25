@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { ChatBubble } from "@/components/ChatBubble";
 import { InputBar } from "@/components/InputBar";
 import { useUserStore, UserName } from "@/store/userStore";
-import { saveConversation, loadConversation } from "@/lib/memory";
+import { saveConversation, loadConversation, deleteConversation } from "@/lib/memory";
 import { uploadPhoto } from "@/lib/upload";
 
 interface Message {
@@ -185,7 +185,11 @@ export default function ModulePage() {
         </div>
 
         {messages.length > 0 && (
-          <button onClick={() => { setMessages([]); setConversationId(undefined); }}
+          <button onClick={async () => {
+              if (conversationId) await deleteConversation(conversationId);
+              setMessages([]);
+              setConversationId(undefined);
+            }}
             style={{ padding: "6px 12px", borderRadius: 20, background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.06)", color: "var(--text-tertiary)", fontSize: 12, cursor: "pointer" }}>
             Limpiar
           </button>

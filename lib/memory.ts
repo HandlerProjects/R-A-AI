@@ -85,6 +85,10 @@ export async function loadConversation(
   return data;
 }
 
+export async function deleteConversation(id: string): Promise<void> {
+  await supabase.from("conversations").delete().eq("id", id);
+}
+
 export async function saveConversation(
   userId: string,
   module: string,
