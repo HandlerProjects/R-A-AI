@@ -10,7 +10,7 @@ import {
 } from "@/lib/preguntas";
 import { uploadPhoto } from "@/lib/upload";
 import { PhotoPicker, PhotoDisplay } from "@/components/PhotoPicker";
-import { getVotos, saveVoto, type Voto } from "@/lib/votos";
+import { getVotos, saveVoto, getModuleStats, type Voto, type ModuleStats } from "@/lib/votos";
 
 const TIPO_CONFIG = {
   predice:  { color: "#007AFF", bg: "linear-gradient(135deg, #007AFF, #5AC8FA)", emoji: "🔮", label: "¿Qué crees que..." },
@@ -37,6 +37,7 @@ export default function PreguntaPage() {
   const [pregunta, setPregunta] = useState<Pregunta | null>(null);
   const [respuestas, setRespuestas] = useState<PreguntaRespuesta[]>([]);
   const [votos, setVotos] = useState<Voto[]>([]);
+  const [stats, setStats] = useState<ModuleStats>({ alejandro: 0, rut: 0, empates: 0 });
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState("");
   const [saving, setSaving] = useState(false);
@@ -54,12 +55,14 @@ export default function PreguntaPage() {
     const load = async () => {
       const p = await getTodayPregunta();
       setPregunta(p);
-      const [resp, vts] = await Promise.all([
+      const [resp, vts, st] = await Promise.all([
         getPreguntaRespuestas(p.id),
         getVotos("pregunta", p.id),
+        getModuleStats("pregunta"),
       ]);
       setRespuestas(resp);
       setVotos(vts);
+      setStats(st);
       setLoading(false);
     };
     load();
@@ -109,8 +112,12 @@ export default function PreguntaPage() {
   const handleVotar = async (votedFor: string) => {
     if (!pregunta || myVoto) return;
     await saveVoto("pregunta", pregunta.id, userParam, votedFor);
-    const updated = await getVotos("pregunta", pregunta.id);
+    const [updated, st] = await Promise.all([
+      getVotos("pregunta", pregunta.id),
+      getModuleStats("pregunta"),
+    ]);
     setVotos(updated);
+    setStats(st);
   };
 
   const tipo = pregunta ? TIPO_CONFIG[pregunta.tipo] : TIPO_CONFIG.opinion;
@@ -141,6 +148,22 @@ export default function PreguntaPage() {
         </div>
       ) : (
         <div style={{ flex: 1, overflowY: "auto", padding: "24px 16px", paddingBottom: `calc(90px + env(safe-area-inset-bottom))` }}>
+
+          {/* Marcador histórico */}
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+            {[
+              { label: "Alejandro", value: stats.alejandro, color: "#1C1C1E", emoji: "👨" },
+              { label: "Empates", value: stats.empates, color: "#8E8E93", emoji: "⚖️" },
+              { label: "Rut", value: stats.rut, color: "#FF2D55", emoji: "👩" },
+            ].map((s) => (
+              <div key={s.label} style={{ flex: 1, background: "white", borderRadius: 14, padding: "10px 6px", textAlign: "center", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                <p style={{ fontSize: 18, margin: "0 0 2px" }}>{s.emoji}</p>
+                <p style={{ fontSize: 22, fontWeight: 800, color: s.color, margin: "0 0 2px", lineHeight: 1 }}>{s.value}</p>
+                <p style={{ fontSize: 10, color: "var(--text-quaternary)", margin: 0, fontWeight: 600 }}>{s.label}</p>
+              </div>
+            ))}
+          </motion.div>
 
           {/* Pregunta card */}
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
