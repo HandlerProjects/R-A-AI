@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
 import { getTodayReto, getRespuestas, saveRespuesta, type Reto, type RetoRespuesta } from "@/lib/retos";
+import { uploadPhoto } from "@/lib/upload";
+import { PhotoPicker, PhotoDisplay } from "@/components/PhotoPicker";
 
 const ACCENT = "#FF6B35";
 const other = (u: string) => u === "alejandro" ? "rut" : "alejandro";
@@ -26,6 +28,8 @@ export default function RetoPage() {
   const [inputText, setInputText] = useState("");
   const [saving, setSaving] = useState(false);
   const [showReveal, setShowReveal] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -45,7 +49,9 @@ export default function RetoPage() {
   const handleSave = async () => {
     if (!inputText.trim() || !reto) return;
     setSaving(true);
-    await saveRespuesta(reto.id, userParam, inputText.trim());
+    let photoUrl: string | null = null;
+    if (photoFile) photoUrl = await uploadPhoto(photoFile, "retos");
+    await saveRespuesta(reto.id, userParam, inputText.trim(), photoUrl);
     const updated = await getRespuestas(reto.id);
     setRespuestas(updated);
     const otherDone = updated.some((r) => r.user_name === other(userParam));
@@ -129,10 +135,16 @@ export default function RetoPage() {
                   rows={4}
                   style={{ width: "100%", background: "white", border: "1px solid rgba(0,0,0,0.1)", borderRadius: 16, padding: "14px", fontSize: 14, color: "var(--text-primary)", resize: "none", outline: "none", fontFamily: "inherit", boxSizing: "border-box", lineHeight: 1.5 }}
                 />
+                <PhotoPicker
+                  preview={photoPreview}
+                  onSelect={(f, p) => { setPhotoFile(f); setPhotoPreview(p); }}
+                  onRemove={() => { setPhotoFile(null); setPhotoPreview(null); }}
+                  accentColor={ACCENT}
+                />
                 <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} disabled={!inputText.trim() || saving}
                   style={{ width: "100%", marginTop: 10, padding: "14px", background: inputText.trim() ? `linear-gradient(135deg, ${ACCENT}, #FF2D55)` : "rgba(0,0,0,0.07)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, color: inputText.trim() ? "white" : "var(--text-quaternary)", cursor: inputText.trim() ? "pointer" : "default", transition: "all 0.2s" }}
                 >
-                  {saving ? "Guardando…" : "Enviar mi respuesta 🎲"}
+                  {saving ? "Subiendo…" : "Enviar mi respuesta 🎲"}
                 </motion.button>
               </motion.div>
             ) : (
@@ -140,6 +152,7 @@ export default function RetoPage() {
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 10 }}>Tu respuesta</p>
                 <div style={{ background: "white", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 16, padding: "14px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
                   <p style={{ fontSize: 14, color: "var(--text-primary)", margin: 0, lineHeight: 1.5 }}>{myRespuesta.content}</p>
+                  {myRespuesta.photo_url && <PhotoDisplay url={myRespuesta.photo_url} />}
                 </div>
               </motion.div>
             )}
@@ -160,6 +173,7 @@ export default function RetoPage() {
                 </div>
                 <div style={{ background: `linear-gradient(135deg, #FFF3EE, #FFF8F5)`, border: `1px solid rgba(255,107,53,0.2)`, borderRadius: 16, padding: "16px", boxShadow: "0 4px 16px rgba(255,107,53,0.1)" }}>
                   <p style={{ fontSize: 14, color: "var(--text-primary)", margin: 0, lineHeight: 1.5 }}>{otherRespuesta.content}</p>
+                  {otherRespuesta.photo_url && <PhotoDisplay url={otherRespuesta.photo_url} />}
                 </div>
               </motion.div>
             )}

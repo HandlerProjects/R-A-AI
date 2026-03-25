@@ -11,6 +11,7 @@ export interface RetoRespuesta {
   reto_id: string;
   user_name: string;
   content: string;
+  photo_url: string | null;
   created_at: string;
 }
 
@@ -71,6 +72,9 @@ export async function getRespuestas(retoId: string): Promise<RetoRespuesta[]> {
   return data ?? [];
 }
 
-export async function saveRespuesta(retoId: string, userName: string, content: string): Promise<void> {
-  await supabase.from("retos_respuestas").upsert({ reto_id: retoId, user_name: userName, content }, { onConflict: "reto_id,user_name" });
+export async function saveRespuesta(retoId: string, userName: string, content: string, photoUrl?: string | null): Promise<void> {
+  await supabase.from("retos_respuestas").upsert(
+    { reto_id: retoId, user_name: userName, content, photo_url: photoUrl ?? null },
+    { onConflict: "reto_id,user_name" }
+  );
 }

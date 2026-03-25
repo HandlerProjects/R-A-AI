@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
 import { loadMomentos, saveMomento, TIPO_CONFIG, type Momento, type TipoMomento } from "@/lib/tarro";
+import { uploadPhoto } from "@/lib/upload";
+import { PhotoPicker, PhotoDisplay } from "@/components/PhotoPicker";
 
 const other = (u: string) => u === "alejandro" ? "rut" : "alejandro";
 
@@ -33,6 +35,8 @@ export default function TarroPage() {
   const [newText, setNewText] = useState("");
   const [newTipo, setNewTipo] = useState<TipoMomento>("romantico");
   const [saving, setSaving] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [lastAdded, setLastAdded] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,7 +47,9 @@ export default function TarroPage() {
     const text = newText.trim();
     if (!text) return;
     setSaving(true);
-    const m = await saveMomento(userParam, text, newTipo);
+    let photoUrl: string | null = null;
+    if (photoFile) photoUrl = await uploadPhoto(photoFile, "tarro");
+    const m = await saveMomento(userParam, text, newTipo, photoUrl);
     if (m) {
       setMomentos((prev) => [m, ...prev]);
       setLastAdded(m.id);
@@ -56,6 +62,8 @@ export default function TarroPage() {
     }
     setNewText("");
     setNewTipo("romantico");
+    setPhotoFile(null);
+    setPhotoPreview(null);
     setAdding(false);
     setSaving(false);
   };
@@ -242,7 +250,11 @@ export default function TarroPage() {
                     style={{ fontSize: 40, display: "block" }}
                   >{cfg.emoji}</motion.span>
                 </div>
-                <p style={{ fontSize: 16, color: "var(--text-primary)", margin: "0 0 20px", lineHeight: 1.6, textAlign: "center" }}>{openMomento.text}</p>
+                <p style={{ fontSize: 16, color: "var(--text-primary)", margin: "0 0 12px", lineHeight: 1.6, textAlign: "center" }}>{openMomento.text}</p>
+                {openMomento.photo_url && (
+                  <img src={openMomento.photo_url} alt="momento" onClick={() => window.open(openMomento.photo_url!, "_blank")}
+                    style={{ width: "100%", borderRadius: 14, objectFit: "cover", maxHeight: 220, display: "block", marginBottom: 16, cursor: "pointer" }} />
+                )}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <p style={{ fontSize: 12, fontWeight: 600, color: cfg.color, margin: 0 }}>{author}</p>
@@ -294,10 +306,16 @@ export default function TarroPage() {
                 style={{ width: "100%", background: "#FAFAFA", border: "1px solid rgba(0,0,0,0.1)", borderRadius: 14, padding: "12px 14px", fontSize: 14, color: "var(--text-primary)", resize: "none", outline: "none", fontFamily: "inherit", boxSizing: "border-box", lineHeight: 1.5 }}
               />
 
+              <PhotoPicker
+                preview={photoPreview}
+                onSelect={(f, p) => { setPhotoFile(f); setPhotoPreview(p); }}
+                onRemove={() => { setPhotoFile(null); setPhotoPreview(null); }}
+                accentColor={TIPO_CONFIG[newTipo].color}
+              />
               <motion.button whileTap={{ scale: 0.97 }} onClick={handleAdd} disabled={!newText.trim() || saving}
                 style={{ width: "100%", marginTop: 12, padding: "14px", background: newText.trim() ? `linear-gradient(135deg, ${TIPO_CONFIG[newTipo].color}, #AF52DE)` : "rgba(0,0,0,0.07)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, color: newText.trim() ? "white" : "var(--text-quaternary)", cursor: newText.trim() ? "pointer" : "default", transition: "all 0.2s" }}
               >
-                {saving ? "Guardando…" : `Echar al tarro ${TIPO_CONFIG[newTipo].emoji}`}
+                {saving ? "Subiendo…" : `Echar al tarro ${TIPO_CONFIG[newTipo].emoji}`}
               </motion.button>
             </motion.div>
           </motion.div>

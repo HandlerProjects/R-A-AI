@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
 import { getTodayPregunta, getPreguntaRespuestas, savePreguntaRespuesta, type Pregunta, type PreguntaRespuesta } from "@/lib/preguntas";
+import { uploadPhoto } from "@/lib/upload";
+import { PhotoPicker, PhotoDisplay } from "@/components/PhotoPicker";
 
 const TIPO_CONFIG = {
   predice:  { color: "#007AFF", bg: "linear-gradient(135deg, #007AFF, #5AC8FA)", emoji: "🔮", label: "¿Qué crees que..." },
@@ -31,6 +33,8 @@ export default function PreguntaPage() {
   const [inputText, setInputText] = useState("");
   const [saving, setSaving] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -54,7 +58,9 @@ export default function PreguntaPage() {
   const handleSave = async () => {
     if (!inputText.trim() || !pregunta) return;
     setSaving(true);
-    await savePreguntaRespuesta(pregunta.id, userParam, inputText.trim());
+    let photoUrl: string | null = null;
+    if (photoFile) photoUrl = await uploadPhoto(photoFile, "preguntas");
+    await savePreguntaRespuesta(pregunta.id, userParam, inputText.trim(), photoUrl);
     const updated = await getPreguntaRespuestas(pregunta.id);
     setRespuestas(updated);
     const otherDone = updated.some((r) => r.user_name === other(userParam));
@@ -135,10 +141,16 @@ export default function PreguntaPage() {
                   rows={4}
                   style={{ width: "100%", background: "white", border: "1px solid rgba(0,0,0,0.1)", borderRadius: 16, padding: "14px", fontSize: 14, color: "var(--text-primary)", resize: "none", outline: "none", fontFamily: "inherit", boxSizing: "border-box", lineHeight: 1.5 }}
                 />
+                <PhotoPicker
+                  preview={photoPreview}
+                  onSelect={(f, p) => { setPhotoFile(f); setPhotoPreview(p); }}
+                  onRemove={() => { setPhotoFile(null); setPhotoPreview(null); }}
+                  accentColor={tipo.color}
+                />
                 <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} disabled={!inputText.trim() || saving}
                   style={{ width: "100%", marginTop: 10, padding: "14px", background: inputText.trim() ? tipo.bg : "rgba(0,0,0,0.07)", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, color: inputText.trim() ? "white" : "var(--text-quaternary)", cursor: inputText.trim() ? "pointer" : "default", transition: "all 0.2s" }}
                 >
-                  {saving ? "Guardando…" : "Enviar mi respuesta ❓"}
+                  {saving ? "Subiendo…" : "Enviar mi respuesta ❓"}
                 </motion.button>
               </motion.div>
             ) : (
@@ -146,6 +158,7 @@ export default function PreguntaPage() {
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 10 }}>Tu respuesta</p>
                 <div style={{ background: "white", border: "1px solid rgba(0,0,0,0.07)", borderRadius: 16, padding: "14px" }}>
                   <p style={{ fontSize: 14, color: "var(--text-primary)", margin: 0, lineHeight: 1.5 }}>{myRespuesta.content}</p>
+                  {myRespuesta.photo_url && <PhotoDisplay url={myRespuesta.photo_url} />}
                 </div>
               </motion.div>
             )}
@@ -174,6 +187,7 @@ export default function PreguntaPage() {
                   style={{ background: "white", border: `1px solid ${tipo.color}30`, borderRadius: 16, padding: "16px", boxShadow: `0 4px 20px ${tipo.color}15` }}
                 >
                   <p style={{ fontSize: 14, color: "var(--text-primary)", margin: 0, lineHeight: 1.5 }}>{otherRespuesta.content}</p>
+                  {otherRespuesta.photo_url && <PhotoDisplay url={otherRespuesta.photo_url} />}
                 </motion.div>
               </motion.div>
             )}

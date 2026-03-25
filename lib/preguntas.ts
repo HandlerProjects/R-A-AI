@@ -12,6 +12,7 @@ export interface PreguntaRespuesta {
   pregunta_id: string;
   user_name: string;
   content: string;
+  photo_url: string | null;
   created_at: string;
 }
 
@@ -67,6 +68,9 @@ export async function getPreguntaRespuestas(preguntaId: string): Promise<Pregunt
   return data ?? [];
 }
 
-export async function savePreguntaRespuesta(preguntaId: string, userName: string, content: string): Promise<void> {
-  await supabase.from("preguntas_respuestas").upsert({ pregunta_id: preguntaId, user_name: userName, content }, { onConflict: "pregunta_id,user_name" });
+export async function savePreguntaRespuesta(preguntaId: string, userName: string, content: string, photoUrl?: string | null): Promise<void> {
+  await supabase.from("preguntas_respuestas").upsert(
+    { pregunta_id: preguntaId, user_name: userName, content, photo_url: photoUrl ?? null },
+    { onConflict: "pregunta_id,user_name" }
+  );
 }

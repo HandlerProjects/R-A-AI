@@ -7,6 +7,7 @@ export interface Momento {
   user_name: string;
   text: string;
   tipo: TipoMomento;
+  photo_url: string | null;
   created_at: string;
 }
 
@@ -25,10 +26,10 @@ export async function loadMomentos(): Promise<Momento[]> {
   return (data ?? []) as Momento[];
 }
 
-export async function saveMomento(userName: string, text: string, tipo: TipoMomento): Promise<Momento | null> {
+export async function saveMomento(userName: string, text: string, tipo: TipoMomento, photoUrl?: string | null): Promise<Momento | null> {
   const { data, error } = await supabase
     .from("tarro_momentos")
-    .insert({ user_name: userName, text, tipo })
+    .insert({ user_name: userName, text, tipo, photo_url: photoUrl ?? null })
     .select()
     .single();
   if (error || !data) return null;
