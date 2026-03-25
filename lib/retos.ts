@@ -4,6 +4,7 @@ export interface Reto {
   id: string;
   date: string;
   text: string;
+  proposed_by: string | null;
 }
 
 export interface RetoRespuesta {
@@ -63,16 +64,40 @@ export async function getTodayReto(): Promise<Reto> {
   const { data } = await supabase.from("retos").select("*").eq("date", today).single();
   if (data) return data;
   const text = getRetoForDate(today);
-  const { data: created } = await supabase.from("retos").insert({ date: today, text }).select().single();
-  return created ?? { id: "local", date: today, text };
+  const { data: created } = await supabase
+    .from("retos")
+    .insert({ date: today, text, proposed_by: null })
+    .select()
+    .single();
+  return created ?? { id: "local", date: today, text, proposed_by: null };
+}
+
+/** Propone un reto personalizado para hoy. Solo funciona si nadie ha respondido aún. */
+export async function proposeCustomReto(
+  retoId: string,
+  text: string,
+  proposedBy: string
+): Promise<void> {
+  await supabase
+    .from("retos")
+    .update({ text, proposed_by: proposedBy })
+    .eq("id", retoId);
 }
 
 export async function getRespuestas(retoId: string): Promise<RetoRespuesta[]> {
-  const { data } = await supabase.from("retos_respuestas").select("*").eq("reto_id", retoId);
+  const { data } = await supabase
+    .from("retos_respuestas")
+    .select("*")
+    .eq("reto_id", retoId);
   return data ?? [];
 }
 
-export async function saveRespuesta(retoId: string, userName: string, content: string, photoUrl?: string | null): Promise<void> {
+export async function saveRespuesta(
+  retoId: string,
+  userName: string,
+  content: string,
+  photoUrl?: string | null
+): Promise<void> {
   await supabase.from("retos_respuestas").upsert(
     { reto_id: retoId, user_name: userName, content, photo_url: photoUrl ?? null },
     { onConflict: "reto_id,user_name" }

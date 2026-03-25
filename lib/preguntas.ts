@@ -5,6 +5,7 @@ export interface Pregunta {
   date: string;
   text: string;
   tipo: "predice" | "opinion" | "recuerda";
+  proposed_by: string | null;
 }
 
 export interface PreguntaRespuesta {
@@ -59,16 +60,41 @@ export async function getTodayPregunta(): Promise<Pregunta> {
   const { data } = await supabase.from("preguntas").select("*").eq("date", today).single();
   if (data) return data;
   const p = getPreguntaForDate(today);
-  const { data: created } = await supabase.from("preguntas").insert({ date: today, text: p.text, tipo: p.tipo }).select().single();
-  return created ?? { id: "local", date: today, text: p.text, tipo: p.tipo };
+  const { data: created } = await supabase
+    .from("preguntas")
+    .insert({ date: today, text: p.text, tipo: p.tipo, proposed_by: null })
+    .select()
+    .single();
+  return created ?? { id: "local", date: today, text: p.text, tipo: p.tipo, proposed_by: null };
+}
+
+/** Propone una pregunta personalizada para hoy. Solo funciona si nadie ha respondido aún. */
+export async function proposeCustomPregunta(
+  preguntaId: string,
+  text: string,
+  tipo: "predice" | "opinion" | "recuerda",
+  proposedBy: string
+): Promise<void> {
+  await supabase
+    .from("preguntas")
+    .update({ text, tipo, proposed_by: proposedBy })
+    .eq("id", preguntaId);
 }
 
 export async function getPreguntaRespuestas(preguntaId: string): Promise<PreguntaRespuesta[]> {
-  const { data } = await supabase.from("preguntas_respuestas").select("*").eq("pregunta_id", preguntaId);
+  const { data } = await supabase
+    .from("preguntas_respuestas")
+    .select("*")
+    .eq("pregunta_id", preguntaId);
   return data ?? [];
 }
 
-export async function savePreguntaRespuesta(preguntaId: string, userName: string, content: string, photoUrl?: string | null): Promise<void> {
+export async function savePreguntaRespuesta(
+  preguntaId: string,
+  userName: string,
+  content: string,
+  photoUrl?: string | null
+): Promise<void> {
   await supabase.from("preguntas_respuestas").upsert(
     { pregunta_id: preguntaId, user_name: userName, content, photo_url: photoUrl ?? null },
     { onConflict: "pregunta_id,user_name" }

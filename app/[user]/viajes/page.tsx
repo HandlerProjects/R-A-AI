@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChatBubble } from "@/components/ChatBubble";
 import { InputBar } from "@/components/InputBar";
 import { useUserStore, UserName } from "@/store/userStore";
+import { saveConversation, loadConversation } from "@/lib/memory";
 
 interface Message {
   role: "user" | "assistant";
@@ -80,6 +81,7 @@ export default function ViajesPage() {
   const [modalDest, setModalDest] = useState<Destination | null>(null);
   const [modalPhotoIdx, setModalPhotoIdx] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const conversationIdRef = useRef<string | undefined>(undefined);
 
   const isAlejandro = userParam === "alejandro";
 
@@ -90,6 +92,19 @@ export default function ViajesPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
+
+  // Cargar historial al montar
+  useEffect(() => {
+    if (!resolvedUserId) return;
+    loadConversation(resolvedUserId, "viajes").then((conv) => {
+      if (conv && conv.messages.length > 0) {
+        setMessages(conv.messages as Message[]);
+        conversationIdRef.current = conv.id;
+        setPhase("chat");
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedUserId]);
 
   const allDestinations = [...DESTINATIONS, ...customDestinations];
 
@@ -179,6 +194,11 @@ export default function ViajesPage() {
           }
         }
       }
+      try {
+        const finalMessages = [userMessage, { role: "assistant" as const, content: assistantContent }];
+        const savedId = await saveConversation(resolvedUserId, "viajes", finalMessages, conversationIdRef.current);
+        if (!conversationIdRef.current && savedId) conversationIdRef.current = savedId;
+      } catch {}
     } catch {
       setIsLoading(false);
       setMessages([{ role: "assistant", content: "Lo siento, hubo un error. Inténtalo de nuevo." }]);
@@ -232,6 +252,11 @@ export default function ViajesPage() {
             }
           }
         }
+        try {
+          const finalMessages = [...updatedMessages, { role: "assistant" as const, content: assistantContent }];
+          const savedId = await saveConversation(resolvedUserId, "viajes", finalMessages, conversationIdRef.current);
+          if (!conversationIdRef.current && savedId) conversationIdRef.current = savedId;
+        } catch {}
       } catch {
         setIsLoading(false);
         setMessages((prev) => [

@@ -4,15 +4,22 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
-import { getTodayPregunta, getPreguntaRespuestas, savePreguntaRespuesta, type Pregunta, type PreguntaRespuesta } from "@/lib/preguntas";
+import {
+  getTodayPregunta, getPreguntaRespuestas, savePreguntaRespuesta, proposeCustomPregunta,
+  type Pregunta, type PreguntaRespuesta,
+} from "@/lib/preguntas";
 import { uploadPhoto } from "@/lib/upload";
 import { PhotoPicker, PhotoDisplay } from "@/components/PhotoPicker";
+import { getVotos, saveVoto, type Voto } from "@/lib/votos";
 
 const TIPO_CONFIG = {
   predice:  { color: "#007AFF", bg: "linear-gradient(135deg, #007AFF, #5AC8FA)", emoji: "🔮", label: "¿Qué crees que..." },
   opinion:  { color: "#AF52DE", bg: "linear-gradient(135deg, #AF52DE, #FF2D55)", emoji: "💬", label: "Los dos opinamos" },
   recuerda: { color: "#FF9F0A", bg: "linear-gradient(135deg, #FF9F0A, #FF6B35)", emoji: "📸", label: "Recuerda cuando…" },
 };
+
+const TIPOS = ["predice", "opinion", "recuerda"] as const;
+type Tipo = typeof TIPOS[number];
 
 const other = (u: string) => u === "alejandro" ? "rut" : "alejandro";
 const otherName = (u: string) => u === "alejandro" ? "Rut" : "Alejandro";
@@ -29,6 +36,7 @@ export default function PreguntaPage() {
 
   const [pregunta, setPregunta] = useState<Pregunta | null>(null);
   const [respuestas, setRespuestas] = useState<PreguntaRespuesta[]>([]);
+  const [votos, setVotos] = useState<Voto[]>([]);
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState("");
   const [saving, setSaving] = useState(false);
@@ -36,12 +44,22 @@ export default function PreguntaPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
+  // Proponer pregunta propia
+  const [showProponer, setShowProponer] = useState(false);
+  const [propuestaText, setPropuestaText] = useState("");
+  const [propuestaTipo, setPropuestaTipo] = useState<Tipo>("opinion");
+  const [savingPropuesta, setSavingPropuesta] = useState(false);
+
   useEffect(() => {
     const load = async () => {
       const p = await getTodayPregunta();
       setPregunta(p);
-      const resp = await getPreguntaRespuestas(p.id);
+      const [resp, vts] = await Promise.all([
+        getPreguntaRespuestas(p.id),
+        getVotos("pregunta", p.id),
+      ]);
       setRespuestas(resp);
+      setVotos(vts);
       setLoading(false);
     };
     load();
@@ -50,6 +68,11 @@ export default function PreguntaPage() {
   const myRespuesta = respuestas.find((r) => r.user_name === userParam);
   const otherRespuesta = respuestas.find((r) => r.user_name === other(userParam));
   const bothDone = !!myRespuesta && !!otherRespuesta;
+  const canPropose = !myRespuesta && !otherRespuesta;
+
+  const myVoto = votos.find((v) => v.voter === userParam);
+  const otherVoto = votos.find((v) => v.voter === other(userParam));
+  const bothVoted = !!myVoto && !!otherVoto;
 
   useEffect(() => {
     if (bothDone) setTimeout(() => setRevealed(true), 500);
@@ -71,6 +94,23 @@ export default function PreguntaPage() {
     }).catch(() => {});
     if (otherDone) setTimeout(() => setRevealed(true), 600);
     setSaving(false);
+  };
+
+  const handleProponer = async () => {
+    if (!propuestaText.trim() || !pregunta) return;
+    setSavingPropuesta(true);
+    await proposeCustomPregunta(pregunta.id, propuestaText.trim(), propuestaTipo, userParam);
+    setPregunta({ ...pregunta, text: propuestaText.trim(), tipo: propuestaTipo, proposed_by: userParam });
+    setPropuestaText("");
+    setShowProponer(false);
+    setSavingPropuesta(false);
+  };
+
+  const handleVotar = async (votedFor: string) => {
+    if (!pregunta || myVoto) return;
+    await saveVoto("pregunta", pregunta.id, userParam, votedFor);
+    const updated = await getVotos("pregunta", pregunta.id);
+    setVotos(updated);
   };
 
   const tipo = pregunta ? TIPO_CONFIG[pregunta.tipo] : TIPO_CONFIG.opinion;
@@ -104,15 +144,66 @@ export default function PreguntaPage() {
 
           {/* Pregunta card */}
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-            style={{ background: tipo.bg, borderRadius: 22, padding: "24px 20px", marginBottom: 24, boxShadow: `0 8px 30px ${tipo.color}40`, position: "relative", overflow: "hidden" }}
+            style={{ background: tipo.bg, borderRadius: 22, padding: "24px 20px", marginBottom: canPropose ? 10 : 24, boxShadow: `0 8px 30px ${tipo.color}40`, position: "relative", overflow: "hidden" }}
           >
             <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.1)" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
               <span style={{ fontSize: 18 }}>{tipo.emoji}</span>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", letterSpacing: "0.08em", textTransform: "uppercase", margin: 0 }}>{tipo.label}</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.75)", letterSpacing: "0.08em", textTransform: "uppercase", margin: 0 }}>
+                {pregunta?.proposed_by ? `Propuesta por ${pregunta.proposed_by === "alejandro" ? "Alejandro" : "Rut"}` : tipo.label}
+              </p>
             </div>
             <p style={{ fontSize: 18, fontWeight: 700, color: "white", margin: 0, lineHeight: 1.4 }}>{pregunta?.text}</p>
           </motion.div>
+
+          {/* Botón proponer */}
+          <AnimatePresence>
+            {canPropose && !showProponer && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ marginBottom: 20 }}>
+                <button onClick={() => setShowProponer(true)}
+                  style={{ width: "100%", padding: "10px", background: `${tipo.color}10`, border: `1px dashed ${tipo.color}50`, borderRadius: 12, fontSize: 13, color: tipo.color, fontWeight: 600, cursor: "pointer" }}>
+                  ✏️ Proponer yo la pregunta de hoy
+                </button>
+              </motion.div>
+            )}
+            {canPropose && showProponer && (
+              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                style={{ marginBottom: 20, background: "white", borderRadius: 16, padding: "14px", border: `1px solid ${tipo.color}25` }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: tipo.color, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Tu pregunta para hoy</p>
+
+                {/* Selector de tipo */}
+                <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                  {TIPOS.map((t) => {
+                    const cfg = TIPO_CONFIG[t];
+                    return (
+                      <button key={t} onClick={() => setPropuestaTipo(t)}
+                        style={{ flex: 1, padding: "6px 4px", borderRadius: 10, border: "none", background: propuestaTipo === t ? cfg.color : "rgba(0,0,0,0.05)", color: propuestaTipo === t ? "white" : "var(--text-secondary)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                        {cfg.emoji} {t}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <textarea
+                  value={propuestaText}
+                  onChange={(e) => setPropuestaText(e.target.value)}
+                  placeholder="¿Qué pregunta queréis responder hoy los dos?"
+                  rows={3}
+                  style={{ width: "100%", background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 12, padding: "10px 12px", fontSize: 14, color: "var(--text-primary)", resize: "none", outline: "none", fontFamily: "inherit", boxSizing: "border-box", lineHeight: 1.5 }}
+                />
+                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                  <button onClick={() => setShowProponer(false)}
+                    style={{ flex: 1, padding: "10px", background: "rgba(0,0,0,0.06)", border: "none", borderRadius: 12, fontSize: 13, color: "var(--text-secondary)", cursor: "pointer" }}>
+                    Cancelar
+                  </button>
+                  <button onClick={handleProponer} disabled={!propuestaText.trim() || savingPropuesta}
+                    style={{ flex: 2, padding: "10px", background: propuestaText.trim() ? tipo.bg : "rgba(0,0,0,0.06)", border: "none", borderRadius: 12, fontSize: 13, fontWeight: 700, color: propuestaText.trim() ? "white" : "var(--text-quaternary)", cursor: propuestaText.trim() ? "pointer" : "default" }}>
+                    {savingPropuesta ? "Guardando…" : "Proponer ❓"}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Status */}
           <div style={{ display: "flex", gap: 8, marginBottom: 22 }}>
@@ -174,20 +265,41 @@ export default function PreguntaPage() {
                 style={{ marginTop: 20 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-                  <motion.span
-                    animate={{ rotateY: [0, 360] }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    style={{ fontSize: 20 }}
-                  >🃏</motion.span>
+                  <motion.span animate={{ rotateY: [0, 360] }} transition={{ duration: 0.6, delay: 0.2 }} style={{ fontSize: 20 }}>🃏</motion.span>
                   <p style={{ fontSize: 13, fontWeight: 700, color: tipo.color, margin: 0 }}>
                     Lo que respondió {otherName(userParam)}
                   </p>
                 </div>
-                <motion.div
-                  style={{ background: "white", border: `1px solid ${tipo.color}30`, borderRadius: 16, padding: "16px", boxShadow: `0 4px 20px ${tipo.color}15` }}
-                >
+                <motion.div style={{ background: "white", border: `1px solid ${tipo.color}30`, borderRadius: 16, padding: "16px", boxShadow: `0 4px 20px ${tipo.color}15` }}>
                   <p style={{ fontSize: 14, color: "var(--text-primary)", margin: 0, lineHeight: 1.5 }}>{otherRespuesta.content}</p>
                   {otherRespuesta.photo_url && <PhotoDisplay url={otherRespuesta.photo_url} />}
+                </motion.div>
+
+                {/* Sección de votos */}
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+                  style={{ marginTop: 16, background: "white", borderRadius: 16, padding: "16px", border: "1px solid rgba(0,0,0,0.07)" }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 12px", textAlign: "center" }}>
+                    🏆 ¿Quién respondió mejor?
+                  </p>
+
+                  {!myVoto ? (
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {[userParam, other(userParam)].map((u) => (
+                        <motion.button key={u} whileTap={{ scale: 0.96 }} onClick={() => handleVotar(u)}
+                          style={{ flex: 1, padding: "12px 8px", background: `${tipo.color}15`, border: `1px solid ${tipo.color}30`, borderRadius: 14, fontSize: 13, fontWeight: 700, color: tipo.color, cursor: "pointer" }}>
+                          {u === "alejandro" ? "👨 Alejandro" : "👩 Rut"}
+                        </motion.button>
+                      ))}
+                    </div>
+                  ) : (
+                    <VoteResult
+                      userParam={userParam}
+                      myVoto={myVoto}
+                      otherVoto={otherVoto}
+                      bothVoted={bothVoted}
+                      accent={tipo.color}
+                    />
+                  )}
                 </motion.div>
               </motion.div>
             )}
@@ -215,7 +327,58 @@ export default function PreguntaPage() {
   );
 }
 
-function BottomNav({ userParam, router }: { userParam: string; router: any }) {
+function VoteResult({ userParam, myVoto, otherVoto, bothVoted, accent }: {
+  userParam: string;
+  myVoto: Voto;
+  otherVoto: Voto | undefined;
+  bothVoted: boolean;
+  accent: string;
+}) {
+  const myName = userParam === "alejandro" ? "Alejandro" : "Rut";
+  const otherName2 = userParam === "alejandro" ? "Rut" : "Alejandro";
+  const myVotedFor = myVoto.voted_for === userParam ? myName : otherName2;
+
+  if (!bothVoted) {
+    return (
+      <div style={{ textAlign: "center" }}>
+        <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0 }}>
+          Votaste por <strong>{myVotedFor}</strong> 👍
+        </p>
+        <p style={{ fontSize: 12, color: "var(--text-quaternary)", margin: "4px 0 0" }}>
+          Esperando el voto de {otherName2}…
+        </p>
+      </div>
+    );
+  }
+
+  const agree = myVoto.voted_for === otherVoto!.voted_for;
+  const winner = myVoto.voted_for === userParam ? myName : otherName2;
+
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: "center" }}>
+      {agree ? (
+        <>
+          <p style={{ fontSize: 24, margin: "0 0 6px" }}>🎉</p>
+          <p style={{ fontSize: 14, fontWeight: 700, color: accent, margin: 0 }}>
+            ¡Los dos coincidís! {winner} ganó
+          </p>
+        </>
+      ) : (
+        <>
+          <p style={{ fontSize: 24, margin: "0 0 6px" }}>⚖️</p>
+          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+            ¡No coincidís — cada uno votó diferente!
+          </p>
+          <p style={{ fontSize: 12, color: "var(--text-tertiary)", margin: "4px 0 0" }}>
+            {myName} votó por {myVoto.voted_for === userParam ? myName : otherName2} · {otherName2} votó por {otherVoto!.voted_for === userParam ? myName : otherName2}
+          </p>
+        </>
+      )}
+    </motion.div>
+  );
+}
+
+function BottomNav({ userParam, router }: { userParam: string; router: ReturnType<typeof useRouter> }) {
   return (
     <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(242,242,247,0.92)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderTop: "1px solid rgba(0,0,0,0.08)", display: "flex", justifyContent: "space-around", alignItems: "center", paddingBottom: "env(safe-area-inset-bottom)", paddingTop: 8, zIndex: 100 }}>
       {[{ icon: "⊞", label: "Inicio", href: `/${userParam}` }, { icon: "💬", label: "Chat", href: `/${userParam}/chat` }, { icon: "👤", label: "Perfil", href: `/${userParam}/profile` }].map((item) => (

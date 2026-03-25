@@ -1,16 +1,20 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { saveConversation, loadConversation } from "@/lib/memory";
 
 export interface Message {
   role: "user" | "assistant";
   content: string;
+  image_url?: string;
 }
 
 interface UseChatStreamOptions {
   userId: string;
   userName: string;
   module: string;
+  /** Si false, no persiste en Supabase. Por defecto true. */
+  persist?: boolean;
 }
 
 interface SendOptions {
@@ -19,9 +23,22 @@ interface SendOptions {
   images?: { base64: string; mediaType: string }[];
 }
 
-export function useChatStream({ userId, userName, module }: UseChatStreamOptions) {
+export function useChatStream({ userId, userName, module, persist = true }: UseChatStreamOptions) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const conversationIdRef = useRef<string | undefined>(undefined);
+
+  // Cargar historial al montar
+  useEffect(() => {
+    if (!persist || !userId) return;
+    loadConversation(userId, module).then((conv) => {
+      if (conv && conv.messages.length > 0) {
+        setMessages(conv.messages as Message[]);
+        conversationIdRef.current = conv.id;
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, module]);
 
   const send = useCallback(
     async (content: string, opts?: SendOptions) => {
@@ -41,7 +58,11 @@ export function useChatStream({ userId, userName, module }: UseChatStreamOptions
             userId,
             userName,
             module,
-            ...(opts?.images ? { images: opts.images } : opts?.imageBase64 ? { imageBase64: opts.imageBase64, imageMediaType: opts.imageMediaType ?? "image/jpeg" } : {}),
+            ...(opts?.images
+              ? { images: opts.images }
+              : opts?.imageBase64
+              ? { imageBase64: opts.imageBase64, imageMediaType: opts.imageMediaType ?? "image/jpeg" }
+              : {}),
           }),
         });
 
@@ -73,6 +94,17 @@ export function useChatStream({ userId, userName, module }: UseChatStreamOptions
             }
           }
         }
+
+        // Guardar conversación completa en Supabase
+        if (persist) {
+          try {
+            const finalMessages = [...updatedMessages, { role: "assistant" as const, content: assistantContent }];
+            const savedId = await saveConversation(userId, module, finalMessages, conversationIdRef.current);
+            if (!conversationIdRef.current && savedId) {
+              conversationIdRef.current = savedId;
+            }
+          } catch {}
+        }
       } catch {
         setIsLoading(false);
         setMessages((prev) => [
@@ -81,12 +113,13 @@ export function useChatStream({ userId, userName, module }: UseChatStreamOptions
         ]);
       }
     },
-    [isLoading, messages, userId, userName, module]
+    [isLoading, messages, userId, userName, module, persist]
   );
 
   const reset = useCallback(() => {
     setMessages([]);
     setIsLoading(false);
+    // No borramos conversationIdRef — el historial sigue en DB
   }, []);
 
   return { messages, setMessages, isLoading, send, reset };
