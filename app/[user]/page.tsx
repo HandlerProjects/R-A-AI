@@ -16,6 +16,7 @@ const SHARED_MODULES = [
 const DAILY_MODULES = [
   { id: "reto", icon: "🎲", title: "Reto del día", description: "El mismo reto para los dos", color: "linear-gradient(135deg, #FF6B35 0%, #FF2D55 100%)" },
   { id: "pregunta", icon: "❓", title: "Pregunta del día", description: "Responded y comparad", color: "linear-gradient(135deg, #007AFF 0%, #AF52DE 100%)" },
+  { id: "preferias", icon: "🤔", title: "¿Qué preferirías?", description: "Proponed y comparad elecciones", color: "linear-gradient(135deg, #AF52DE 0%, #FF2D55 100%)" },
   { id: "tarro", icon: "🫙", title: "Tarro de momentos", description: "Guardad lo que os importa", color: "linear-gradient(135deg, #AF52DE 0%, #FF9F0A 100%)" },
 ];
 

@@ -1,0 +1,338 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { useUserStore, UserName } from "@/store/userStore";
+import {
+  getPreferias, createPreferia, getAllRespuestas, savePreferiaRespuesta,
+  type Preferia, type PreferiaRespuesta,
+} from "@/lib/preferias";
+
+const ACCENT = "#AF52DE";
+const ACCENT2 = "#FF2D55";
+const BG = "linear-gradient(135deg, #AF52DE 0%, #FF2D55 100%)";
+
+const other = (u: string) => u === "alejandro" ? "rut" : "alejandro";
+const otherName = (u: string) => u === "alejandro" ? "Rut" : "Alejandro";
+
+export default function PreferiasPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { activeUser, setUser } = useUserStore();
+  const userParam = params.user as UserName;
+
+  useEffect(() => {
+    if (userParam && userParam !== activeUser) setUser(userParam, userParam);
+  }, [userParam, activeUser, setUser]);
+
+  const [preferias, setPreferias] = useState<Preferia[]>([]);
+  const [respuestas, setRespuestas] = useState<PreferiaRespuesta[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Form nueva preferia
+  const [showForm, setShowForm] = useState(false);
+  const [formText, setFormText] = useState("");
+  const [formA, setFormA] = useState("");
+  const [formB, setFormB] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // Reveal animado por id
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const load = async () => {
+      const [p, r] = await Promise.all([getPreferias(), getAllRespuestas()]);
+      setPreferias(p);
+      setRespuestas(r);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const handleCreate = async () => {
+    if (!formText.trim() || !formA.trim() || !formB.trim()) return;
+    setSaving(true);
+    const nueva = await createPreferia(formText.trim(), formA.trim(), formB.trim(), userParam);
+    if (nueva) {
+      setPreferias((prev) => [nueva, ...prev]);
+      fetch("/api/push/preferia", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ toUser: other(userParam), createdBy: userParam, text: formText.trim() }),
+      }).catch(() => {});
+    }
+    setFormText(""); setFormA(""); setFormB("");
+    setShowForm(false);
+    setSaving(false);
+  };
+
+  const handleAnswer = async (preferiaId: string, answer: "a" | "b") => {
+    await savePreferiaRespuesta(preferiaId, userParam, answer);
+    const updated = await getAllRespuestas();
+    setRespuestas(updated);
+    // Si el otro ya respondió, reveal con animación
+    const otherAnswered = updated.some(
+      (r) => r.preferia_id === preferiaId && r.user_name === other(userParam)
+    );
+    if (otherAnswered) {
+      setTimeout(() => setRevealedIds((prev) => new Set([...prev, preferiaId])), 400);
+    }
+  };
+
+  // Inicializa reveals para preguntas donde ambos ya respondieron al cargar
+  useEffect(() => {
+    const ids = new Set<string>();
+    for (const p of preferias) {
+      const mine = respuestas.some((r) => r.preferia_id === p.id && r.user_name === userParam);
+      const theirs = respuestas.some((r) => r.preferia_id === p.id && r.user_name === other(userParam));
+      if (mine && theirs) ids.add(p.id);
+    }
+    setRevealedIds(ids);
+  }, [preferias, respuestas, userParam]);
+
+  return (
+    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg-primary)", overflow: "hidden" }}>
+
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
+        style={{ padding: "14px 20px 12px", paddingTop: `calc(14px + env(safe-area-inset-top))`, background: "rgba(242,242,247,0.92)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0,0,0,0.06)", flexShrink: 0, zIndex: 10 }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => router.back()} style={{ background: "rgba(0,0,0,0.06)", border: "none", borderRadius: "50%", width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#1C1C1E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </button>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>¿Qué preferirías? 🤔</h1>
+            <p style={{ fontSize: 11, color: "var(--text-tertiary)", margin: 0 }}>Proponed y responded los dos</p>
+          </div>
+          <motion.button whileTap={{ scale: 0.92 }} onClick={() => setShowForm(true)}
+            style={{ width: 36, height: 36, borderRadius: "50%", background: BG, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 3px 12px ${ACCENT}40` }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2.5" strokeLinecap="round" /></svg>
+          </motion.button>
+        </div>
+      </motion.div>
+
+      {/* Form nueva pregunta */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            style={{ margin: "12px 16px 0", background: "white", borderRadius: 20, padding: "18px", border: `1px solid ${ACCENT}25`, boxShadow: `0 4px 20px ${ACCENT}15`, flexShrink: 0 }}
+          >
+            <p style={{ fontSize: 13, fontWeight: 700, color: ACCENT, margin: "0 0 12px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Nueva pregunta</p>
+
+            <input
+              value={formText}
+              onChange={(e) => setFormText(e.target.value)}
+              placeholder="¿Qué preferirías…?"
+              style={{ width: "100%", background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 12, padding: "10px 12px", fontSize: 14, color: "var(--text-primary)", outline: "none", fontFamily: "inherit", boxSizing: "border-box", marginBottom: 8 }}
+            />
+
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#007AFF", margin: "0 0 4px" }}>OPCIÓN A</p>
+                <input
+                  value={formA}
+                  onChange={(e) => setFormA(e.target.value)}
+                  placeholder="Primera opción…"
+                  style={{ width: "100%", background: "rgba(0,122,255,0.05)", border: "1px solid rgba(0,122,255,0.2)", borderRadius: 10, padding: "9px 10px", fontSize: 13, color: "var(--text-primary)", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: ACCENT2, margin: "0 0 4px" }}>OPCIÓN B</p>
+                <input
+                  value={formB}
+                  onChange={(e) => setFormB(e.target.value)}
+                  placeholder="Segunda opción…"
+                  style={{ width: "100%", background: "rgba(255,45,85,0.05)", border: "1px solid rgba(255,45,85,0.2)", borderRadius: 10, padding: "9px 10px", fontSize: 13, color: "var(--text-primary)", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => setShowForm(false)}
+                style={{ flex: 1, padding: "10px", background: "rgba(0,0,0,0.06)", border: "none", borderRadius: 12, fontSize: 13, color: "var(--text-secondary)", cursor: "pointer" }}>
+                Cancelar
+              </button>
+              <button onClick={handleCreate} disabled={!formText.trim() || !formA.trim() || !formB.trim() || saving}
+                style={{ flex: 2, padding: "10px", background: formText.trim() && formA.trim() && formB.trim() ? BG : "rgba(0,0,0,0.06)", border: "none", borderRadius: 12, fontSize: 13, fontWeight: 700, color: formText.trim() ? "white" : "var(--text-quaternary)", cursor: formText.trim() ? "pointer" : "default" }}>
+                {saving ? "Enviando…" : "Publicar pregunta 🤔"}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lista */}
+      {loading ? (
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <p style={{ color: "var(--text-quaternary)", fontSize: 14 }}>Cargando…</p>
+        </div>
+      ) : preferias.length === 0 ? (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+          style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "0 32px" }}>
+          <span style={{ fontSize: 52 }}>🤔</span>
+          <p style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", margin: 0, textAlign: "center" }}>¡Nada por aquí todavía!</p>
+          <p style={{ fontSize: 14, color: "var(--text-tertiary)", margin: 0, textAlign: "center", lineHeight: 1.5 }}>
+            Sé el primero en proponer un "¿qué preferirías?"
+          </p>
+          <motion.button whileTap={{ scale: 0.96 }} onClick={() => setShowForm(true)}
+            style={{ marginTop: 8, padding: "12px 24px", background: BG, border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, color: "white", cursor: "pointer", boxShadow: `0 4px 16px ${ACCENT}30` }}>
+            Crear la primera ✨
+          </motion.button>
+        </motion.div>
+      ) : (
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px", paddingBottom: `calc(90px + env(safe-area-inset-bottom))`, display: "flex", flexDirection: "column", gap: 14 }}>
+          {preferias.map((p, i) => {
+            const myResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === userParam);
+            const otherResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === other(userParam));
+            const bothDone = !!myResp && !!otherResp;
+            const revealed = revealedIds.has(p.id);
+            const isMine = p.created_by === userParam;
+
+            return (
+              <motion.div key={p.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 24, delay: i * 0.04 }}
+                style={{ background: "white", borderRadius: 20, border: "1px solid rgba(0,0,0,0.07)", overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+              >
+                {/* Card header */}
+                <div style={{ background: BG, padding: "14px 16px 12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: "white", margin: 0, lineHeight: 1.4, flex: 1 }}>{p.text}</p>
+                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 600, whiteSpace: "nowrap", marginTop: 2 }}>
+                      {isMine ? "Tú" : otherName(userParam)}
+                    </span>
+                  </div>
+                  {/* Status pills */}
+                  <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                    {["alejandro", "rut"].map((u) => {
+                      const done = respuestas.some((r) => r.preferia_id === p.id && r.user_name === u);
+                      return (
+                        <div key={u} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 20, background: done ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)" }}>
+                          <div style={{ width: 5, height: 5, borderRadius: "50%", background: done ? "white" : "rgba(255,255,255,0.4)" }} />
+                          <span style={{ fontSize: 10, fontWeight: 600, color: done ? "white" : "rgba(255,255,255,0.5)" }}>
+                            {u === "alejandro" ? "Alejandro" : "Rut"} {done ? "✓" : "…"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Opciones / Reveal */}
+                <div style={{ padding: "14px 16px" }}>
+                  <AnimatePresence mode="wait">
+                    {!myResp ? (
+                      /* Aún sin responder — mostrar botones */
+                      <motion.div key="options" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-quaternary)", margin: "0 0 10px", textAlign: "center" }}>¿Qué elegirías?</p>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <motion.button whileTap={{ scale: 0.96 }} onClick={() => handleAnswer(p.id, "a")}
+                            style={{ flex: 1, padding: "12px 8px", background: "rgba(0,122,255,0.07)", border: "1px solid rgba(0,122,255,0.2)", borderRadius: 14, cursor: "pointer", textAlign: "center" }}>
+                            <p style={{ fontSize: 10, fontWeight: 700, color: "#007AFF", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>A</p>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{p.option_a}</p>
+                          </motion.button>
+                          <motion.button whileTap={{ scale: 0.96 }} onClick={() => handleAnswer(p.id, "b")}
+                            style={{ flex: 1, padding: "12px 8px", background: "rgba(255,45,85,0.07)", border: "1px solid rgba(255,45,85,0.2)", borderRadius: 14, cursor: "pointer", textAlign: "center" }}>
+                            <p style={{ fontSize: 10, fontWeight: 700, color: ACCENT2, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>B</p>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{p.option_b}</p>
+                          </motion.button>
+                        </div>
+                      </motion.div>
+                    ) : !revealed ? (
+                      /* Respondí, esperando al otro */
+                      <motion.div key="waiting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          {[{ opt: p.option_a, ans: "a", color: "#007AFF" }, { opt: p.option_b, ans: "b", color: ACCENT2 }].map(({ opt, ans, color }) => (
+                            <div key={ans} style={{ flex: 1, padding: "12px 8px", background: myResp.answer === ans ? `${color}12` : "rgba(0,0,0,0.03)", border: `1.5px solid ${myResp.answer === ans ? color : "transparent"}`, borderRadius: 14, textAlign: "center", opacity: myResp.answer === ans ? 1 : 0.4 }}>
+                              <p style={{ fontSize: 10, fontWeight: 700, color, margin: "0 0 4px", textTransform: "uppercase" }}>{ans.toUpperCase()}</p>
+                              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{opt}</p>
+                              {myResp.answer === ans && <p style={{ fontSize: 10, color, margin: "4px 0 0", fontWeight: 600 }}>Tu elección ✓</p>}
+                            </div>
+                          ))}
+                        </div>
+                        {!otherResp && (
+                          <p style={{ fontSize: 12, color: "var(--text-quaternary)", textAlign: "center", margin: "10px 0 0" }}>
+                            Esperando a {otherName(userParam)}…
+                          </p>
+                        )}
+                      </motion.div>
+                    ) : (
+                      /* Reveal — ambos respondieron */
+                      <motion.div key="reveal" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 280, damping: 22 }}>
+                        <RevealCards
+                          optionA={p.option_a}
+                          optionB={p.option_b}
+                          myAnswer={myResp!.answer}
+                          otherAnswer={otherResp!.answer}
+                          userParam={userParam}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      <BottomNav userParam={userParam} router={router} />
+    </div>
+  );
+}
+
+function RevealCards({ optionA, optionB, myAnswer, otherAnswer, userParam }: {
+  optionA: string; optionB: string;
+  myAnswer: "a" | "b"; otherAnswer: "a" | "b";
+  userParam: string;
+}) {
+  const agree = myAnswer === otherAnswer;
+  const myName = userParam === "alejandro" ? "Alejandro" : "Rut";
+  const otherN = userParam === "alejandro" ? "Rut" : "Alejandro";
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+        {[{ opt: optionA, ans: "a" as const, color: "#007AFF" }, { opt: optionB, ans: "b" as const, color: "#FF2D55" }].map(({ opt, ans, color }) => {
+          const myChose = myAnswer === ans;
+          const otherChose = otherAnswer === ans;
+          return (
+            <div key={ans} style={{ flex: 1, padding: "12px 8px", background: (myChose || otherChose) ? `${color}10` : "rgba(0,0,0,0.03)", border: `1.5px solid ${(myChose || otherChose) ? color : "rgba(0,0,0,0.06)"}`, borderRadius: 14, textAlign: "center" }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color, margin: "0 0 4px", textTransform: "uppercase" }}>{ans.toUpperCase()}</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 6px", lineHeight: 1.3 }}>{opt}</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {myChose && <span style={{ fontSize: 10, color, fontWeight: 700 }}>👤 {myName}</span>}
+                {otherChose && <span style={{ fontSize: 10, color, fontWeight: 700 }}>👤 {otherN}</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ textAlign: "center", padding: "6px 0 0" }}>
+        {agree
+          ? <p style={{ fontSize: 13, fontWeight: 700, color: "#34C759", margin: 0 }}>🎉 ¡Los dos elegís lo mismo!</p>
+          : <p style={{ fontSize: 13, fontWeight: 700, color: ACCENT, margin: 0 }}>🤷 ¡Cada uno elige diferente!</p>
+        }
+      </div>
+    </div>
+  );
+}
+
+function BottomNav({ userParam, router }: { userParam: string; router: ReturnType<typeof useRouter> }) {
+  return (
+    <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(242,242,247,0.92)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderTop: "1px solid rgba(0,0,0,0.08)", display: "flex", justifyContent: "space-around", alignItems: "center", paddingBottom: "env(safe-area-inset-bottom)", paddingTop: 8, zIndex: 100 }}>
+      {[{ icon: "⊞", label: "Inicio", href: `/${userParam}` }, { icon: "💬", label: "Chat", href: `/${userParam}/chat` }, { icon: "👤", label: "Perfil", href: `/${userParam}/profile` }].map((item) => (
+        <button key={item.href} onClick={() => router.push(item.href)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 20px", background: "none", border: "none", cursor: "pointer", opacity: 0.6 }}>
+          <span style={{ fontSize: 22 }}>{item.icon}</span>
+          <span style={{ fontSize: 10, fontWeight: 500, color: "var(--text-primary)" }}>{item.label}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
