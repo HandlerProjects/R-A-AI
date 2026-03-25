@@ -5,11 +5,12 @@ import { motion } from "framer-motion";
 interface ChatBubbleProps {
   role: "user" | "assistant";
   content: string;
+  imageUrl?: string;
   isLoading?: boolean;
   accentColor?: string;
 }
 
-export function ChatBubble({ role, content, isLoading, accentColor = "#1C1C1E" }: ChatBubbleProps) {
+export function ChatBubble({ role, content, imageUrl, isLoading, accentColor = "#1C1C1E" }: ChatBubbleProps) {
   const isUser = role === "user";
 
   return (
@@ -38,6 +39,14 @@ export function ChatBubble({ role, content, isLoading, accentColor = "#1C1C1E" }
         wordBreak: "break-word",
         border: isUser ? "none" : "1px solid rgba(0,0,0,0.05)",
       }}>
+        {imageUrl && (
+          <img
+            src={imageUrl}
+            alt="foto"
+            onClick={() => window.open(imageUrl, "_blank")}
+            style={{ display: "block", width: "100%", maxWidth: 260, borderRadius: 12, marginBottom: content ? 8 : 0, cursor: "pointer", objectFit: "cover" }}
+          />
+        )}
         {isLoading ? <LoadingDots /> : content}
       </div>
     </motion.div>

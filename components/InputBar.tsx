@@ -4,7 +4,7 @@ import { useState, useRef, KeyboardEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface InputBarProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, imageFile?: File) => void;
   disabled?: boolean;
   placeholder?: string;
   accentColor?: string;
@@ -12,13 +12,18 @@ interface InputBarProps {
 
 export function InputBar({ onSend, disabled, placeholder = "Escribe algo...", accentColor = "#1C1C1E" }: InputBarProps) {
   const [value, setValue] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSend = () => {
     const trimmed = value.trim();
-    if (!trimmed || disabled) return;
-    onSend(trimmed);
+    if ((!trimmed && !imageFile) || disabled) return;
+    onSend(trimmed, imageFile ?? undefined);
     setValue("");
+    setImageFile(null);
+    setImagePreview(null);
     if (textareaRef.current) textareaRef.current.style.height = "auto";
   };
 
@@ -33,7 +38,15 @@ export function InputBar({ onSend, disabled, placeholder = "Escribe algo...", ac
     el.style.height = Math.min(el.scrollHeight, 120) + "px";
   };
 
-  const hasValue = value.trim().length > 0;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    e.target.value = "";
+  };
+
+  const hasContent = value.trim().length > 0 || !!imageFile;
 
   return (
     <div style={{
@@ -43,6 +56,30 @@ export function InputBar({ onSend, disabled, placeholder = "Escribe algo...", ac
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       borderTop: "1px solid rgba(0,0,0,0.08)",
     }}>
+      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
+
+      {/* Image preview */}
+      <AnimatePresence>
+        {imagePreview && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ marginBottom: 8, position: "relative", display: "inline-block" }}
+          >
+            <img src={imagePreview} alt="preview"
+              style={{ height: 80, borderRadius: 10, objectFit: "cover", display: "block" }} />
+            <button onClick={() => { setImageFile(null); setImagePreview(null); }}
+              style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.6)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div style={{
         display: "flex", alignItems: "flex-end", gap: 8,
         background: "white",
@@ -51,6 +88,18 @@ export function InputBar({ onSend, disabled, placeholder = "Escribe algo...", ac
         padding: "8px 8px 8px 14px",
         boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
       }}>
+        {/* Camera button */}
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled}
+          style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", justifyContent: "center", opacity: disabled ? 0.4 : 0.5, flexShrink: 0 }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="#8E8E93" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="12" cy="13" r="4" stroke="#8E8E93" strokeWidth="1.8"/>
+          </svg>
+        </button>
+
         <textarea
           ref={textareaRef}
           value={value}
@@ -67,7 +116,7 @@ export function InputBar({ onSend, disabled, placeholder = "Escribe algo...", ac
           }}
         />
         <AnimatePresence>
-          {hasValue && (
+          {hasContent && (
             <motion.button
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

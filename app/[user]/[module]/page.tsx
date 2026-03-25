@@ -7,10 +7,12 @@ import { ChatBubble } from "@/components/ChatBubble";
 import { InputBar } from "@/components/InputBar";
 import { useUserStore, UserName } from "@/store/userStore";
 import { saveConversation, loadConversation } from "@/lib/memory";
+import { uploadPhoto } from "@/lib/upload";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  image_url?: string;
 }
 
 const SHARED_MODULES = ["plans", "italian", "chat", "viajes"];
@@ -48,7 +50,7 @@ export default function ModulePage() {
   const isAlejandro = userParam === "alejandro";
   const accentColor = isAlejandro ? "#1C1C1E" : "#FF2D55";
   const isSharedModule = SHARED_MODULES.includes(moduleParam);
-  const effectiveUserId = isSharedModule ? "shared" : (userId ?? userParam);
+  const effectiveUserId = isSharedModule ? "shared" : userParam;
 
   useEffect(() => {
     if (userParam && userParam !== activeUser) setUser(userParam, userParam);
@@ -72,9 +74,26 @@ export default function ModulePage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  const sendMessage = useCallback(async (content: string) => {
+  const sendMessage = useCallback(async (content: string, imageFile?: File) => {
     if (isLoading) return;
-    const userMessage: Message = { role: "user", content };
+
+    // Upload image if provided, get URL for storage + base64 for Claude
+    let imageUrl: string | undefined;
+    let imageBase64: string | undefined;
+    let imageMediaType: string | undefined;
+    if (imageFile) {
+      // Upload to storage for persistent display
+      imageUrl = await uploadPhoto(imageFile, "chat") ?? undefined;
+      // Convert to base64 for Claude vision
+      imageBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(",")[1]);
+        reader.readAsDataURL(imageFile);
+      });
+      imageMediaType = imageFile.type;
+    }
+
+    const userMessage: Message = { role: "user", content, ...(imageUrl ? { image_url: imageUrl } : {}) };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setIsLoading(true);
@@ -83,7 +102,13 @@ export default function ModulePage() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: updatedMessages, userId: effectiveUserId, userName: userParam, module: moduleParam }),
+        body: JSON.stringify({
+          messages: updatedMessages,
+          userId: effectiveUserId,
+          userName: userParam,
+          module: moduleParam,
+          ...(imageBase64 ? { imageBase64, imageMediaType } : {}),
+        }),
       });
 
       if (!response.ok || !response.body) throw new Error();
@@ -121,7 +146,7 @@ export default function ModulePage() {
       setIsLoading(false);
       setMessages(prev => [...prev, { role: "assistant", content: "Lo siento, hubo un error. Inténtalo de nuevo." }]);
     }
-  }, [isLoading, messages, userId, userParam, moduleParam, conversationId]);
+  }, [isLoading, messages, userParam, moduleParam, conversationId, effectiveUserId]);
 
   return (
     <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg-primary)", overflow: "hidden" }}>
@@ -185,7 +210,7 @@ export default function ModulePage() {
         )}
 
         {messages.map((msg, i) => (
-          <ChatBubble key={i} role={msg.role} content={msg.content} accentColor={accentColor} />
+          <ChatBubble key={i} role={msg.role} content={msg.content} imageUrl={msg.image_url} accentColor={accentColor} />
         ))}
 
         {isLoading && <ChatBubble role="assistant" content="" isLoading accentColor={accentColor} />}
