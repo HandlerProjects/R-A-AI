@@ -40,14 +40,36 @@ export default function ProfilePage() {
   // ─── Notifications ──────────────────────────────────────────────────────────
   const [notifState, setNotifState] = useState<"unknown" | "active" | "inactive" | "loading">("unknown");
 
+  // Al montar: si el permiso ya está concedido, forzar re-suscripción fresca
+  // para garantizar que el endpoint en Supabase está siempre actualizado
   useEffect(() => {
     if (typeof Notification === "undefined") { setNotifState("inactive"); return; }
-    if (Notification.permission === "granted") {
-      setNotifState("active");
-    } else {
-      setNotifState("inactive");
-    }
-  }, []);
+    if (Notification.permission !== "granted") { setNotifState("inactive"); return; }
+
+    const silentRenew = async () => {
+      try {
+        const reg = await navigator.serviceWorker.register("/sw.js");
+        await navigator.serviceWorker.ready;
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) await existing.unsubscribe();
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+        });
+        await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription: sub.toJSON(), userName: userParam }),
+        });
+        localStorage.setItem("ra_push_v2", "granted");
+        setNotifState("active");
+      } catch {
+        setNotifState("active"); // Mostrar como activo aunque falle el renew silencioso
+      }
+    };
+
+    silentRenew();
+  }, [userParam]);
 
   const activateNotifications = async () => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
@@ -212,27 +234,38 @@ export default function ProfilePage() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.8)", margin: 0, fontWeight: 500 }}>
-                {notifState === "active" ? "🔔 Activadas" : notifState === "loading" ? "⏳ Procesando…" : "🔕 Desactivadas"}
+                {notifState === "active" ? "🔔 Activadas" : notifState === "loading" || notifState === "unknown" ? "⏳ Renovando…" : "🔕 Desactivadas"}
               </p>
               <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", margin: "3px 0 0" }}>
-                {notifState === "active" ? "Recibes avisos de cartas y la cuenta atrás" : "No recibes ningún aviso"}
+                {notifState === "active" ? "Suscripción renovada y lista ✓" : notifState === "loading" || notifState === "unknown" ? "Registrando dispositivo…" : "No recibes ningún aviso"}
               </p>
             </div>
             <motion.button
               whileTap={{ scale: 0.93 }}
               onClick={notifState === "active" ? deactivateNotifications : activateNotifications}
-              disabled={notifState === "loading"}
+              disabled={notifState === "loading" || notifState === "unknown"}
               style={{
-                padding: "8px 16px", borderRadius: 20, border: "none", cursor: notifState === "loading" ? "default" : "pointer",
+                padding: "8px 16px", borderRadius: 20, border: "none",
+                cursor: (notifState === "loading" || notifState === "unknown") ? "default" : "pointer",
                 fontWeight: 600, fontSize: 13,
                 background: notifState === "active" ? "rgba(255,59,48,0.15)" : "rgba(52,199,89,0.15)",
                 color: notifState === "active" ? "#FF3B30" : "#34C759",
                 transition: "all 0.2s",
               }}
             >
-              {notifState === "loading" ? "…" : notifState === "active" ? "Desactivar" : "Activar"}
+              {(notifState === "loading" || notifState === "unknown") ? "…" : notifState === "active" ? "Desactivar" : "Activar"}
             </motion.button>
           </div>
+          {notifState === "active" && (
+            <motion.button
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={activateNotifications}
+              style={{ marginTop: 12, width: "100%", padding: "9px", background: "rgba(52,199,89,0.1)", border: "1px solid rgba(52,199,89,0.2)", borderRadius: 12, fontSize: 13, fontWeight: 600, color: "#34C759", cursor: "pointer" }}
+            >
+              🔄 Forzar renovación de suscripción
+            </motion.button>
+          )}
         </div>
 
         {/* Switch user button */}

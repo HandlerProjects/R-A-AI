@@ -14,7 +14,7 @@ export function NotificationCard({ userName }: NotificationCardProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
   useEffect(() => {
-    // Always silently renew subscription if permission already granted
+    // Silently force fresh subscription if permission already granted
     if (
       Notification.permission === "granted" &&
       "serviceWorker" in navigator &&
@@ -22,6 +22,9 @@ export function NotificationCard({ userName }: NotificationCardProps) {
     ) {
       navigator.serviceWorker.register("/sw.js").then(async (reg) => {
         await navigator.serviceWorker.ready;
+        // Unsubscribe existing to ensure fresh endpoint in Supabase
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) await existing.unsubscribe();
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
