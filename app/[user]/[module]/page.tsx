@@ -140,7 +140,8 @@ export default function ModulePage() {
       }
 
       try {
-        await saveConversation(effectiveUserId, moduleParam, [...updatedMessages, { role: "assistant", content: assistantContent }], conversationId);
+        const savedId = await saveConversation(effectiveUserId, moduleParam, [...updatedMessages, { role: "assistant", content: assistantContent }], conversationId);
+        if (!conversationId && savedId) setConversationId(savedId);
       } catch {}
     } catch {
       setIsLoading(false);

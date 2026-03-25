@@ -168,12 +168,15 @@ export default function TFGPage() {
         }
 
         try {
-          await saveConversation(
+          const savedId = await saveConversation(
             resolvedUserId,
             activeMode,
             [...updatedMessages, { role: "assistant", content: assistantContent }],
             convIds[activeMode]
           );
+          if (!convIds[activeMode] && savedId) {
+            setConvIds((prev) => ({ ...prev, [activeMode]: savedId }));
+          }
         } catch {}
       } catch {
         setIsLoading(false);

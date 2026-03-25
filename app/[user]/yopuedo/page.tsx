@@ -216,8 +216,8 @@ export default function YoPuedoPage() {
 
       const finalMessages: Message[] = [...newMessages, { role: "assistant", content: assistantText }];
       if (resolvedUserId) {
-        saveConversation(resolvedUserId, "yopuedo", finalMessages, convId).then(() => {
-          if (!convId) loadConversation(resolvedUserId, "yopuedo").then((c) => c && setConvId(c.id));
+        saveConversation(resolvedUserId, "yopuedo", finalMessages, convId).then((savedId) => {
+          if (!convId && savedId) setConvId(savedId);
         });
       }
     } catch (err: any) {

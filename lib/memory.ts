@@ -90,17 +90,19 @@ export async function saveConversation(
   module: string,
   messages: { role: string; content: string }[],
   existingId?: string
-): Promise<void> {
+): Promise<string | null> {
   if (existingId) {
     await supabase
       .from("conversations")
       .update({ messages, updated_at: new Date().toISOString() })
       .eq("id", existingId);
+    return existingId;
   } else {
-    await supabase.from("conversations").insert({
-      user_id: userId,
-      module,
-      messages,
-    });
+    const { data } = await supabase
+      .from("conversations")
+      .insert({ user_id: userId, module, messages })
+      .select("id")
+      .single();
+    return data?.id ?? null;
   }
 }
