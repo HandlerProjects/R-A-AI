@@ -7,6 +7,7 @@ import { useUserStore, UserName } from "@/store/userStore";
 import { NotificationCard } from "@/components/NotificationCard";
 
 const SHARED_MODULES = [
+  { id: "carnet", icon: "💕", title: "Nuestros carnets", description: "Alejandro & Rut · pareja oficial", color: "linear-gradient(135deg, #1C1C1E 0%, #FF2D55 100%)" },
   { id: "plans", icon: "💑", title: "Planes", description: "Cread el plan perfecto juntos", color: "linear-gradient(135deg, #FF2D55 0%, #FF6B35 100%)" },
   { id: "italian", icon: "🇮🇹", title: "Italiano", description: "Aprended juntos o por separado", color: "linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%)" },
   { id: "chat", icon: "💬", title: "Chat R&A", description: "IA con contexto de los dos", color: "linear-gradient(135deg, #AF52DE 0%, #FF2D55 100%)" },
