@@ -131,7 +131,7 @@ export default function CarnetPage() {
               photoUrl={isAle ? mine?.photo_url ?? null : other?.photo_url ?? null}
               apodo={isAle ? mine?.apodo ?? null : other?.apodo ?? null}
               cardId="R&A-001"
-              accentColor="#1d4ed8"
+              accentColor="#ea580c"
               isMine={isAle}
               uploading={isAle ? uploading : false}
               onPhoto={isAle ? () => fileRef.current?.click() : () => {}}
@@ -147,7 +147,7 @@ export default function CarnetPage() {
               photoUrl={isAle ? other?.photo_url ?? null : mine?.photo_url ?? null}
               apodo={isAle ? other?.apodo ?? null : mine?.apodo ?? null}
               cardId="R&A-002"
-              accentColor="#be123c"
+              accentColor="#ea580c"
               isMine={!isAle}
               uploading={!isAle ? uploading : false}
               onPhoto={!isAle ? () => fileRef.current?.click() : () => {}}
@@ -186,7 +186,7 @@ export default function CarnetPage() {
                   Cancelar
                 </button>
                 <button onClick={handleSave} disabled={saving}
-                  style={{ flex: 2, padding: 13, background: isAle ? "#1d4ed8" : "#be123c", border: "none", borderRadius: 12, color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                  style={{ flex: 2, padding: 13, background: "#ea580c", border: "none", borderRadius: 12, color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
                   {saving ? "Guardando…" : "Guardar"}
                 </button>
               </div>
@@ -295,10 +295,11 @@ function DNICard(p: DNIProps) {
                   )}
                 </div>
                 {p.isMine && !p.uploading && (
-                  <p onClick={(e) => { e.stopPropagation(); p.onPhoto(); }}
-                    style={{ fontSize: 8, fontWeight: 700, color: p.accentColor, textAlign: "center", marginTop: 4, cursor: "pointer", letterSpacing: "0.04em" }}>
-                    CAMBIAR
-                  </p>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); p.onPhoto(); }}
+                    style={{ display: "block", width: "100%", marginTop: 5, fontSize: 8, fontWeight: 700, color: "white", background: p.accentColor, border: "none", borderRadius: 3, padding: "4px 0", cursor: "pointer", letterSpacing: "0.04em" }}>
+                    CAMBIAR FOTO
+                  </button>
                 )}
               </div>
 
