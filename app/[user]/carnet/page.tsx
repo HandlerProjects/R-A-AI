@@ -156,7 +156,9 @@ export default function CarnetPage() {
               bd={bd}
               delay={0.13}
             />
-            <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhoto} />
+            <input ref={fileRef} id="ra-photo-input" type="file" accept="image/*"
+              style={{ position: "absolute", opacity: 0, width: 1, height: 1, pointerEvents: "none" }}
+              onChange={handlePhoto} />
           </>
         )}
       </div>
@@ -272,13 +274,11 @@ function DNICard(p: DNIProps) {
 
               {/* Photo */}
               <div style={{ flexShrink: 0 }}>
-                <div onClick={(e) => { if (p.isMine) { e.stopPropagation(); p.onPhoto(); } }}
-                  style={{
+                <div style={{
                     width: 80, height: 100, borderRadius: 4, overflow: "hidden",
                     background: "#f3f4f6", border: `2px solid ${p.accentColor}30`,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    cursor: p.isMine ? "pointer" : "default", position: "relative",
-                    flexShrink: 0,
+                    position: "relative", flexShrink: 0,
                   }}>
                   {p.photoUrl
                     ? <img src={p.photoUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
@@ -295,11 +295,11 @@ function DNICard(p: DNIProps) {
                   )}
                 </div>
                 {p.isMine && !p.uploading && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); p.onPhoto(); }}
-                    style={{ display: "block", width: "100%", marginTop: 5, fontSize: 8, fontWeight: 700, color: "white", background: p.accentColor, border: "none", borderRadius: 3, padding: "4px 0", cursor: "pointer", letterSpacing: "0.04em" }}>
+                  <label htmlFor="ra-photo-input"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ display: "block", width: "100%", marginTop: 5, fontSize: 8, fontWeight: 700, color: "white", background: p.accentColor, borderRadius: 3, padding: "4px 0", cursor: "pointer", letterSpacing: "0.04em", textAlign: "center" }}>
                     CAMBIAR FOTO
-                  </button>
+                  </label>
                 )}
               </div>
 
