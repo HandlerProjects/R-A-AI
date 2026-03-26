@@ -8,7 +8,7 @@ import { getBothProfiles, upsertProfile, type UserProfile } from "@/lib/profiles
 import { uploadPhoto } from "@/lib/upload";
 
 const COUPLE_DATE = "2026-01-30";
-const MEET_DATE   = "2024-11-14";
+const MEET_DATE   = "2025-11-14";
 
 function daysSince(d: string | null) {
   if (!d) return 0;
