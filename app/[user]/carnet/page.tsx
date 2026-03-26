@@ -7,7 +7,8 @@ import { useUserStore, UserName } from "@/store/userStore";
 import { getBothProfiles, upsertProfile, type UserProfile } from "@/lib/profiles";
 import { uploadPhoto } from "@/lib/upload";
 
-const COUPLE_DATE = "2023-06-15";
+const COUPLE_DATE = "2025-01-30"; // Juntos desde
+const MEET_DATE = "2024-11-14";  // Nos conocimos
 
 function daysTogether(fechaInicio: string | null): number {
   if (!fechaInicio) return 0;
@@ -141,9 +142,21 @@ export default function CarnetPage() {
           <>
             {/* Días juntos banner */}
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05 }}
-              style={{ background: "linear-gradient(135deg, rgba(255,45,85,0.2) 0%, rgba(175,82,222,0.2) 100%)", border: "1px solid rgba(255,45,85,0.25)", borderRadius: 16, padding: "14px 18px", textAlign: "center" }}>
-              <p style={{ fontSize: 32, fontWeight: 800, color: "white", margin: 0, letterSpacing: "-0.5px" }}>{days.toLocaleString("es-ES")}</p>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", margin: "2px 0 0" }}>días juntos · desde el {formatDate(fechaInicio)}</p>
+              style={{ background: "linear-gradient(135deg, rgba(255,45,85,0.2) 0%, rgba(175,82,222,0.2) 100%)", border: "1px solid rgba(255,45,85,0.25)", borderRadius: 16, padding: "16px 18px" }}>
+              <div style={{ textAlign: "center", marginBottom: 12 }}>
+                <p style={{ fontSize: 36, fontWeight: 800, color: "white", margin: 0, letterSpacing: "-1px" }}>{days.toLocaleString("es-ES")}</p>
+                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", margin: "2px 0 0" }}>días juntos</p>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <div style={{ flex: 1, background: "rgba(255,255,255,0.07)", borderRadius: 10, padding: "8px 10px" }}>
+                  <p style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.35)", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>❤️ Juntos desde</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "white", margin: 0 }}>30 ene 2025</p>
+                </div>
+                <div style={{ flex: 1, background: "rgba(255,255,255,0.07)", borderRadius: 10, padding: "8px 10px" }}>
+                  <p style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.35)", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.06em" }}>✨ Nos conocimos</p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "white", margin: 0 }}>14 nov 2024</p>
+                </div>
+              </div>
             </motion.div>
 
             {/* Mi carnet */}
@@ -395,6 +408,20 @@ function FlippableCard(props: CardProps) {
                   <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>{b.label}</span>
                 </div>
               ))}
+            </div>
+
+            {/* Hitos */}
+            <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ flex: 1, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "8px 10px" }}>
+                <p style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.3)", margin: "0 0 2px", textTransform: "uppercase" }}>✨ Nos conocimos</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.6)", margin: 0 }}>14 nov 2024</p>
+                <p style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", margin: "2px 0 0" }}>{daysTogether(MEET_DATE).toLocaleString("es-ES")} días</p>
+              </div>
+              <div style={{ flex: 1, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "8px 10px" }}>
+                <p style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.3)", margin: "0 0 2px", textTransform: "uppercase" }}>❤️ Juntos desde</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.6)", margin: 0 }}>30 ene 2025</p>
+                <p style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", margin: "2px 0 0" }}>{daysTogether(MEET_DATE) - daysTogether("2025-01-30") > 0 ? `${(daysTogether(MEET_DATE) - daysTogether("2025-01-30")).toLocaleString("es-ES")} días antes` : ""}</p>
+              </div>
             </div>
 
             {/* Poder especial */}
