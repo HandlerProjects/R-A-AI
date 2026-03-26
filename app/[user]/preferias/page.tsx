@@ -186,99 +186,160 @@ export default function PreferiasPage() {
         </motion.div>
       ) : (
         <div style={{ flex: 1, overflowY: "auto", padding: "16px", paddingBottom: `calc(90px + env(safe-area-inset-bottom))`, display: "flex", flexDirection: "column", gap: 14 }}>
-          {preferias.map((p, i) => {
-            const myResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === userParam);
-            const otherResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === other(userParam));
-            const bothDone = !!myResp && !!otherResp;
-            const revealed = revealedIds.has(p.id);
-            const isMine = p.created_by === userParam;
+          {(() => {
+            const active = preferias.filter((p) => {
+              const myResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === userParam);
+              const otherResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === other(userParam));
+              return !(myResp && otherResp);
+            });
+            const archived = preferias.filter((p) => {
+              const myResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === userParam);
+              const otherResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === other(userParam));
+              return !!(myResp && otherResp);
+            });
 
             return (
-              <motion.div key={p.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 24, delay: i * 0.04 }}
-                style={{ background: "white", borderRadius: 20, border: "1px solid rgba(0,0,0,0.07)", overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
-              >
-                {/* Card header */}
-                <div style={{ background: BG, padding: "14px 16px 12px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: "white", margin: 0, lineHeight: 1.4, flex: 1 }}>{p.text}</p>
-                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 600, whiteSpace: "nowrap", marginTop: 2 }}>
-                      {isMine ? "Tú" : otherName(userParam)}
-                    </span>
-                  </div>
-                  {/* Status pills */}
-                  <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                    {["alejandro", "rut"].map((u) => {
-                      const done = respuestas.some((r) => r.preferia_id === p.id && r.user_name === u);
-                      return (
-                        <div key={u} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 20, background: done ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)" }}>
-                          <div style={{ width: 5, height: 5, borderRadius: "50%", background: done ? "white" : "rgba(255,255,255,0.4)" }} />
-                          <span style={{ fontSize: 10, fontWeight: 600, color: done ? "white" : "rgba(255,255,255,0.5)" }}>
-                            {u === "alejandro" ? "Alejandro" : "Rut"} {done ? "✓" : "…"}
+              <>
+                {/* Activas */}
+                {active.map((p, i) => {
+                  const myResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === userParam);
+                  const otherResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === other(userParam));
+                  const revealed = revealedIds.has(p.id);
+                  const isMine = p.created_by === userParam;
+
+                  return (
+                    <motion.div key={p.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 24, delay: i * 0.04 }}
+                      style={{ background: "white", borderRadius: 20, border: "1px solid rgba(0,0,0,0.07)", overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+                    >
+                      {/* Card header */}
+                      <div style={{ background: BG, padding: "14px 16px 12px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                          <p style={{ fontSize: 15, fontWeight: 700, color: "white", margin: 0, lineHeight: 1.4, flex: 1 }}>{p.text}</p>
+                          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 600, whiteSpace: "nowrap", marginTop: 2 }}>
+                            {isMine ? "Tú" : otherName(userParam)}
                           </span>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                          {["alejandro", "rut"].map((u) => {
+                            const done = respuestas.some((r) => r.preferia_id === p.id && r.user_name === u);
+                            return (
+                              <div key={u} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 20, background: done ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)" }}>
+                                <div style={{ width: 5, height: 5, borderRadius: "50%", background: done ? "white" : "rgba(255,255,255,0.4)" }} />
+                                <span style={{ fontSize: 10, fontWeight: 600, color: done ? "white" : "rgba(255,255,255,0.5)" }}>
+                                  {u === "alejandro" ? "Alejandro" : "Rut"} {done ? "✓" : "…"}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
 
-                {/* Opciones / Reveal */}
-                <div style={{ padding: "14px 16px" }}>
-                  <AnimatePresence mode="wait">
-                    {!myResp ? (
-                      /* Aún sin responder — mostrar botones */
-                      <motion.div key="options" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-quaternary)", margin: "0 0 10px", textAlign: "center" }}>¿Qué elegirías?</p>
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <motion.button whileTap={{ scale: 0.96 }} onClick={() => handleAnswer(p.id, "a")}
-                            style={{ flex: 1, padding: "12px 8px", background: "rgba(0,122,255,0.07)", border: "1px solid rgba(0,122,255,0.2)", borderRadius: 14, cursor: "pointer", textAlign: "center" }}>
-                            <p style={{ fontSize: 10, fontWeight: 700, color: "#007AFF", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>A</p>
-                            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{p.option_a}</p>
-                          </motion.button>
-                          <motion.button whileTap={{ scale: 0.96 }} onClick={() => handleAnswer(p.id, "b")}
-                            style={{ flex: 1, padding: "12px 8px", background: "rgba(255,45,85,0.07)", border: "1px solid rgba(255,45,85,0.2)", borderRadius: 14, cursor: "pointer", textAlign: "center" }}>
-                            <p style={{ fontSize: 10, fontWeight: 700, color: ACCENT2, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>B</p>
-                            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{p.option_b}</p>
-                          </motion.button>
-                        </div>
-                      </motion.div>
-                    ) : !revealed ? (
-                      /* Respondí, esperando al otro */
-                      <motion.div key="waiting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                        <div style={{ display: "flex", gap: 8 }}>
-                          {[{ opt: p.option_a, ans: "a", color: "#007AFF" }, { opt: p.option_b, ans: "b", color: ACCENT2 }].map(({ opt, ans, color }) => (
-                            <div key={ans} style={{ flex: 1, padding: "12px 8px", background: myResp.answer === ans ? `${color}12` : "rgba(0,0,0,0.03)", border: `1.5px solid ${myResp.answer === ans ? color : "transparent"}`, borderRadius: 14, textAlign: "center", opacity: myResp.answer === ans ? 1 : 0.4 }}>
-                              <p style={{ fontSize: 10, fontWeight: 700, color, margin: "0 0 4px", textTransform: "uppercase" }}>{ans.toUpperCase()}</p>
-                              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{opt}</p>
-                              {myResp.answer === ans && <p style={{ fontSize: 10, color, margin: "4px 0 0", fontWeight: 600 }}>Tu elección ✓</p>}
+                      {/* Opciones */}
+                      <div style={{ padding: "14px 16px" }}>
+                        <AnimatePresence mode="wait">
+                          {!myResp ? (
+                            <motion.div key="options" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-quaternary)", margin: "0 0 10px", textAlign: "center" }}>¿Qué elegirías?</p>
+                              <div style={{ display: "flex", gap: 8 }}>
+                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => handleAnswer(p.id, "a")}
+                                  style={{ flex: 1, padding: "12px 8px", background: "rgba(0,122,255,0.07)", border: "1px solid rgba(0,122,255,0.2)", borderRadius: 14, cursor: "pointer", textAlign: "center" }}>
+                                  <p style={{ fontSize: 10, fontWeight: 700, color: "#007AFF", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>A</p>
+                                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{p.option_a}</p>
+                                </motion.button>
+                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => handleAnswer(p.id, "b")}
+                                  style={{ flex: 1, padding: "12px 8px", background: "rgba(255,45,85,0.07)", border: "1px solid rgba(255,45,85,0.2)", borderRadius: 14, cursor: "pointer", textAlign: "center" }}>
+                                  <p style={{ fontSize: 10, fontWeight: 700, color: ACCENT2, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>B</p>
+                                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{p.option_b}</p>
+                                </motion.button>
+                              </div>
+                            </motion.div>
+                          ) : !revealed ? (
+                            <motion.div key="waiting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                              <div style={{ display: "flex", gap: 8 }}>
+                                {[{ opt: p.option_a, ans: "a", color: "#007AFF" }, { opt: p.option_b, ans: "b", color: ACCENT2 }].map(({ opt, ans, color }) => (
+                                  <div key={ans} style={{ flex: 1, padding: "12px 8px", background: myResp.answer === ans ? `${color}12` : "rgba(0,0,0,0.03)", border: `1.5px solid ${myResp.answer === ans ? color : "transparent"}`, borderRadius: 14, textAlign: "center", opacity: myResp.answer === ans ? 1 : 0.4 }}>
+                                    <p style={{ fontSize: 10, fontWeight: 700, color, margin: "0 0 4px", textTransform: "uppercase" }}>{ans.toUpperCase()}</p>
+                                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{opt}</p>
+                                    {myResp.answer === ans && <p style={{ fontSize: 10, color, margin: "4px 0 0", fontWeight: 600 }}>Tu elección ✓</p>}
+                                  </div>
+                                ))}
+                              </div>
+                              {!otherResp && (
+                                <p style={{ fontSize: 12, color: "var(--text-quaternary)", textAlign: "center", margin: "10px 0 0" }}>
+                                  Esperando a {otherName(userParam)}…
+                                </p>
+                              )}
+                            </motion.div>
+                          ) : (
+                            <motion.div key="reveal" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 280, damping: 22 }}>
+                              <RevealCards
+                                optionA={p.option_a}
+                                optionB={p.option_b}
+                                myAnswer={myResp!.answer}
+                                otherAnswer={otherResp!.answer}
+                                userParam={userParam}
+                              />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+
+                {/* Archivadas */}
+                {archived.length > 0 && (
+                  <div style={{ marginTop: active.length > 0 ? 8 : 0 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-quaternary)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px 4px" }}>
+                      Archivadas · {archived.length}
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {archived.map((p, i) => {
+                        const myResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === userParam)!;
+                        const otherResp = respuestas.find((r) => r.preferia_id === p.id && r.user_name === other(userParam))!;
+                        const agree = myResp.answer === otherResp.answer;
+                        const myChose = myResp.answer === "a" ? p.option_a : p.option_b;
+                        const otherChose = otherResp.answer === "a" ? p.option_a : p.option_b;
+                        const myColor = myResp.answer === "a" ? "#007AFF" : ACCENT2;
+                        const otherColor = otherResp.answer === "a" ? "#007AFF" : ACCENT2;
+
+                        return (
+                          <motion.div key={p.id}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.03 }}
+                            style={{ background: "white", borderRadius: 14, border: "1px solid rgba(0,0,0,0.06)", padding: "12px 14px", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}
+                          >
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
+                              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.4, flex: 1 }}>{p.text}</p>
+                              <span style={{ fontSize: 14 }}>{agree ? "🎉" : "🤷"}</span>
                             </div>
-                          ))}
-                        </div>
-                        {!otherResp && (
-                          <p style={{ fontSize: 12, color: "var(--text-quaternary)", textAlign: "center", margin: "10px 0 0" }}>
-                            Esperando a {otherName(userParam)}…
-                          </p>
-                        )}
-                      </motion.div>
-                    ) : (
-                      /* Reveal — ambos respondieron */
-                      <motion.div key="reveal" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 280, damping: 22 }}>
-                        <RevealCards
-                          optionA={p.option_a}
-                          optionB={p.option_b}
-                          myAnswer={myResp!.answer}
-                          otherAnswer={otherResp!.answer}
-                          userParam={userParam}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
+                            <div style={{ display: "flex", gap: 6 }}>
+                              <div style={{ flex: 1, background: `${myColor}10`, border: `1px solid ${myColor}30`, borderRadius: 8, padding: "6px 8px" }}>
+                                <p style={{ fontSize: 9, fontWeight: 700, color: myColor, margin: "0 0 2px", textTransform: "uppercase" }}>
+                                  {userParam === "alejandro" ? "Alejandro" : "Rut"}
+                                </p>
+                                <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{myChose}</p>
+                              </div>
+                              <div style={{ flex: 1, background: `${otherColor}10`, border: `1px solid ${otherColor}30`, borderRadius: 8, padding: "6px 8px" }}>
+                                <p style={{ fontSize: 9, fontWeight: 700, color: otherColor, margin: "0 0 2px", textTransform: "uppercase" }}>
+                                  {userParam === "alejandro" ? "Rut" : "Alejandro"}
+                                </p>
+                                <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{otherChose}</p>
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
             );
-          })}
+          })()}
         </div>
       )}
 
