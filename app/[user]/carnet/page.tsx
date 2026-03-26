@@ -409,9 +409,3 @@ function Field({ label, value, color }: { label: string; value: string; color?: 
     </div>
   );
 }
-
-function mrz(name: string, id: string) {
-  const n = name.toUpperCase().padEnd(12, "<").slice(0, 12);
-  const i = id.replace("-", "").padEnd(10, "<");
-  return `${n}<<${i}<<<<<<<<`;
-}
