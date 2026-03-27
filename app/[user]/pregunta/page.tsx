@@ -11,6 +11,7 @@ import {
 import { uploadPhoto } from "@/lib/upload";
 import { PhotoPicker, PhotoDisplay } from "@/components/PhotoPicker";
 import { getVotos, saveVoto, getModuleStats, type Voto, type ModuleStats } from "@/lib/votos";
+import { awardPoints } from "@/lib/puntos";
 
 const TIPO_CONFIG = {
   predice:  { color: "#007AFF", bg: "linear-gradient(135deg, #007AFF, #5AC8FA)", emoji: "🔮", label: "¿Qué crees que..." },
@@ -118,6 +119,19 @@ export default function PreguntaPage() {
     ]);
     setVotos(updated);
     setStats(st);
+
+    // Solo el segundo en votar dispara los puntos automáticos
+    const myV = updated.find((v) => v.voter === userParam);
+    const otherV = updated.find((v) => v.voter === other(userParam));
+    if (myV && otherV) {
+      const agree = myV.voted_for === otherV.voted_for;
+      if (agree) {
+        await awardPoints(myV.voted_for, 1, "🏆 Ganador votación · Pregunta del día");
+      } else {
+        await awardPoints(userParam, 1, "⚖️ Empate votación · Pregunta del día");
+        await awardPoints(other(userParam), 1, "⚖️ Empate votación · Pregunta del día");
+      }
+    }
   };
 
   const tipo = pregunta ? TIPO_CONFIG[pregunta.tipo] : TIPO_CONFIG.opinion;

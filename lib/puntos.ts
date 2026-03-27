@@ -80,6 +80,33 @@ export async function aplicarAccion(
   });
 }
 
+/** Otorga puntos automáticamente (sin acción manual) */
+export async function awardPoints(
+  targetUser: string,
+  valor: number,
+  motivo: string
+): Promise<void> {
+  const { data: current } = await supabase
+    .from("puntos_saldo")
+    .select("puntos")
+    .eq("user_name", targetUser)
+    .single();
+
+  const newPuntos = Math.max(0, (current?.puntos ?? 0) + valor);
+
+  await supabase.from("puntos_saldo").upsert(
+    { user_name: targetUser, puntos: newPuntos, updated_at: new Date().toISOString() },
+    { onConflict: "user_name" }
+  );
+
+  await supabase.from("puntos_historial").insert({
+    user_name: targetUser,
+    applied_by: "sistema",
+    valor,
+    motivo,
+  });
+}
+
 export async function addAccion(
   texto: string,
   valor: number,

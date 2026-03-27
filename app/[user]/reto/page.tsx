@@ -11,6 +11,7 @@ import {
 import { uploadPhoto } from "@/lib/upload";
 import { PhotoPicker, PhotoDisplay } from "@/components/PhotoPicker";
 import { getVotos, saveVoto, getModuleStats, type Voto, type ModuleStats } from "@/lib/votos";
+import { awardPoints } from "@/lib/puntos";
 
 const ACCENT = "#FF6B35";
 const other = (u: string) => u === "alejandro" ? "rut" : "alejandro";
@@ -105,6 +106,19 @@ export default function RetoPage() {
     ]);
     setVotos(updated);
     setStats(st);
+
+    // Solo el segundo en votar dispara los puntos automáticos
+    const myV = updated.find((v) => v.voter === userParam);
+    const otherV = updated.find((v) => v.voter === other(userParam));
+    if (myV && otherV) {
+      const agree = myV.voted_for === otherV.voted_for;
+      if (agree) {
+        await awardPoints(myV.voted_for, 1, "🏆 Ganador votación · Reto del día");
+      } else {
+        await awardPoints(userParam, 1, "⚖️ Empate votación · Reto del día");
+        await awardPoints(other(userParam), 1, "⚖️ Empate votación · Reto del día");
+      }
+    }
   };
 
   useEffect(() => {

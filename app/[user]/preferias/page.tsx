@@ -8,6 +8,7 @@ import {
   getPreferias, createPreferia, getAllRespuestas, savePreferiaRespuesta,
   type Preferia, type PreferiaRespuesta,
 } from "@/lib/preferias";
+import { awardPoints } from "@/lib/puntos";
 
 const ACCENT = "#AF52DE";
 const ACCENT2 = "#FF2D55";
@@ -71,11 +72,20 @@ export default function PreferiasPage() {
     await savePreferiaRespuesta(preferiaId, userParam, answer);
     const updated = await getAllRespuestas();
     setRespuestas(updated);
-    // Si el otro ya respondió, reveal con animación
-    const otherAnswered = updated.some(
-      (r) => r.preferia_id === preferiaId && r.user_name === other(userParam)
-    );
-    if (otherAnswered) {
+
+    const myResp    = updated.find((r) => r.preferia_id === preferiaId && r.user_name === userParam);
+    const otherResp = updated.find((r) => r.preferia_id === preferiaId && r.user_name === other(userParam));
+
+    // Solo el segundo en responder dispara los puntos
+    if (myResp && otherResp) {
+      const agree = myResp.answer === otherResp.answer;
+      if (agree) {
+        await awardPoints(userParam,          1, "🎯 Coincidís · ¿Qué preferirías?");
+        await awardPoints(other(userParam),   1, "🎯 Coincidís · ¿Qué preferirías?");
+      } else {
+        await awardPoints(userParam,         -1, "💔 No coincidís · ¿Qué preferirías?");
+        await awardPoints(other(userParam),  -1, "💔 No coincidís · ¿Qué preferirías?");
+      }
       setTimeout(() => setRevealedIds((prev) => new Set([...prev, preferiaId])), 400);
     }
   };
