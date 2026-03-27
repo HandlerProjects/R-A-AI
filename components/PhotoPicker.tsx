@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface PhotoPickerProps {
@@ -11,7 +11,7 @@ interface PhotoPickerProps {
 }
 
 export function PhotoPicker({ preview, onSelect, onRemove, accentColor = "#007AFF" }: PhotoPickerProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -23,7 +23,13 @@ export function PhotoPicker({ preview, onSelect, onRemove, accentColor = "#007AF
 
   return (
     <>
-      <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleChange} />
+      <input
+        id={inputId}
+        type="file"
+        accept="image/*"
+        onChange={handleChange}
+        style={{ position: "absolute", opacity: 0, width: 1, height: 1, pointerEvents: "none" }}
+      />
 
       <AnimatePresence mode="wait">
         {preview ? (
@@ -54,16 +60,16 @@ export function PhotoPicker({ preview, onSelect, onRemove, accentColor = "#007AF
             </button>
           </motion.div>
         ) : (
-          <motion.button
+          <motion.label
             key="picker"
+            htmlFor={inputId}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => inputRef.current?.click()}
             style={{
               marginTop: 8,
-              display: "flex", alignItems: "center", gap: 6,
+              display: "inline-flex", alignItems: "center", gap: 6,
               padding: "8px 14px", borderRadius: 20,
               background: `${accentColor}12`,
               border: `1px dashed ${accentColor}50`,
@@ -76,7 +82,7 @@ export function PhotoPicker({ preview, onSelect, onRemove, accentColor = "#007AF
               <circle cx="12" cy="13" r="4" stroke={accentColor} strokeWidth="2"/>
             </svg>
             Añadir foto
-          </motion.button>
+          </motion.label>
         )}
       </AnimatePresence>
     </>

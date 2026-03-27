@@ -238,37 +238,45 @@ export default function PreferiasPage() {
                       </div>
 
                       {/* Opciones */}
-                      <div style={{ padding: "14px 16px" }}>
+                      <div style={{ padding: "16px" }}>
                         <AnimatePresence mode="wait">
                           {!myResp ? (
                             <motion.div key="options" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-quaternary)", margin: "0 0 10px", textAlign: "center" }}>¿Qué elegirías?</p>
-                              <div style={{ display: "flex", gap: 8 }}>
-                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => handleAnswer(p.id, "a")}
-                                  style={{ flex: 1, padding: "12px 8px", background: "rgba(0,122,255,0.07)", border: "1px solid rgba(0,122,255,0.2)", borderRadius: 14, cursor: "pointer", textAlign: "center" }}>
-                                  <p style={{ fontSize: 10, fontWeight: 700, color: "#007AFF", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>A</p>
-                                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{p.option_a}</p>
+                              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-quaternary)", margin: "0 0 12px", textAlign: "center", textTransform: "uppercase", letterSpacing: "0.06em" }}>¿Qué elegirías?</p>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                <motion.button whileTap={{ scale: 0.98 }} onClick={() => handleAnswer(p.id, "a")}
+                                  style={{ width: "100%", padding: "16px 14px", background: "rgba(0,122,255,0.07)", border: "1.5px solid rgba(0,122,255,0.25)", borderRadius: 16, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 14 }}>
+                                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                    <span style={{ fontSize: 13, fontWeight: 800, color: "white" }}>A</span>
+                                  </div>
+                                  <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.4 }}>{p.option_a}</p>
                                 </motion.button>
-                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => handleAnswer(p.id, "b")}
-                                  style={{ flex: 1, padding: "12px 8px", background: "rgba(255,45,85,0.07)", border: "1px solid rgba(255,45,85,0.2)", borderRadius: 14, cursor: "pointer", textAlign: "center" }}>
-                                  <p style={{ fontSize: 10, fontWeight: 700, color: ACCENT2, margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>B</p>
-                                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{p.option_b}</p>
+                                <motion.button whileTap={{ scale: 0.98 }} onClick={() => handleAnswer(p.id, "b")}
+                                  style={{ width: "100%", padding: "16px 14px", background: "rgba(255,45,85,0.07)", border: "1.5px solid rgba(255,45,85,0.25)", borderRadius: 16, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 14 }}>
+                                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: ACCENT2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                    <span style={{ fontSize: 13, fontWeight: 800, color: "white" }}>B</span>
+                                  </div>
+                                  <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.4 }}>{p.option_b}</p>
                                 </motion.button>
                               </div>
                             </motion.div>
                           ) : !revealed ? (
                             <motion.div key="waiting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                              <div style={{ display: "flex", gap: 8 }}>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                                 {[{ opt: p.option_a, ans: "a", color: "#007AFF" }, { opt: p.option_b, ans: "b", color: ACCENT2 }].map(({ opt, ans, color }) => (
-                                  <div key={ans} style={{ flex: 1, padding: "12px 8px", background: myResp.answer === ans ? `${color}12` : "rgba(0,0,0,0.03)", border: `1.5px solid ${myResp.answer === ans ? color : "transparent"}`, borderRadius: 14, textAlign: "center", opacity: myResp.answer === ans ? 1 : 0.4 }}>
-                                    <p style={{ fontSize: 10, fontWeight: 700, color, margin: "0 0 4px", textTransform: "uppercase" }}>{ans.toUpperCase()}</p>
-                                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{opt}</p>
-                                    {myResp.answer === ans && <p style={{ fontSize: 10, color, margin: "4px 0 0", fontWeight: 600 }}>Tu elección ✓</p>}
+                                  <div key={ans} style={{ padding: "16px 14px", background: myResp.answer === ans ? `${color}10` : "rgba(0,0,0,0.03)", border: `1.5px solid ${myResp.answer === ans ? color : "rgba(0,0,0,0.06)"}`, borderRadius: 16, display: "flex", alignItems: "center", gap: 14, opacity: myResp.answer === ans ? 1 : 0.45 }}>
+                                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: myResp.answer === ans ? color : "rgba(0,0,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                      <span style={{ fontSize: 13, fontWeight: 800, color: myResp.answer === ans ? "white" : "var(--text-quaternary)" }}>{ans.toUpperCase()}</span>
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                      <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.4 }}>{opt}</p>
+                                      {myResp.answer === ans && <p style={{ fontSize: 11, color, margin: "3px 0 0", fontWeight: 700 }}>Tu elección ✓</p>}
+                                    </div>
                                   </div>
                                 ))}
                               </div>
                               {!otherResp && (
-                                <p style={{ fontSize: 12, color: "var(--text-quaternary)", textAlign: "center", margin: "10px 0 0" }}>
+                                <p style={{ fontSize: 12, color: "var(--text-quaternary)", textAlign: "center", margin: "12px 0 0" }}>
                                   Esperando a {otherName(userParam)}…
                                 </p>
                               )}
@@ -359,23 +367,28 @@ function RevealCards({ optionA, optionB, myAnswer, otherAnswer, userParam }: {
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12 }}>
         {[{ opt: optionA, ans: "a" as const, color: "#007AFF" }, { opt: optionB, ans: "b" as const, color: "#FF2D55" }].map(({ opt, ans, color }) => {
           const myChose = myAnswer === ans;
           const otherChose = otherAnswer === ans;
+          const chosen = myChose || otherChose;
           return (
-            <div key={ans} style={{ flex: 1, padding: "12px 8px", background: (myChose || otherChose) ? `${color}10` : "rgba(0,0,0,0.03)", border: `1.5px solid ${(myChose || otherChose) ? color : "rgba(0,0,0,0.06)"}`, borderRadius: 14, textAlign: "center" }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color, margin: "0 0 4px", textTransform: "uppercase" }}>{ans.toUpperCase()}</p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 6px", lineHeight: 1.3 }}>{opt}</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {myChose && <span style={{ fontSize: 10, color, fontWeight: 700 }}>👤 {myName}</span>}
-                {otherChose && <span style={{ fontSize: 10, color, fontWeight: 700 }}>👤 {otherN}</span>}
+            <div key={ans} style={{ padding: "14px", background: chosen ? `${color}10` : "rgba(0,0,0,0.03)", border: `1.5px solid ${chosen ? color : "rgba(0,0,0,0.06)"}`, borderRadius: 16, display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: chosen ? color : "rgba(0,0,0,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: chosen ? "white" : "var(--text-quaternary)" }}>{ans.toUpperCase()}</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px", lineHeight: 1.4 }}>{opt}</p>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {myChose && <span style={{ fontSize: 11, color, fontWeight: 700, background: `${color}15`, padding: "2px 7px", borderRadius: 20 }}>👤 {myName}</span>}
+                  {otherChose && <span style={{ fontSize: 11, color, fontWeight: 700, background: `${color}15`, padding: "2px 7px", borderRadius: 20 }}>👤 {otherN}</span>}
+                </div>
               </div>
             </div>
           );
         })}
       </div>
-      <div style={{ textAlign: "center", padding: "6px 0 0" }}>
+      <div style={{ textAlign: "center" }}>
         {agree
           ? <p style={{ fontSize: 13, fontWeight: 700, color: "#34C759", margin: 0 }}>🎉 ¡Los dos elegís lo mismo!</p>
           : <p style={{ fontSize: 13, fontWeight: 700, color: ACCENT, margin: 0 }}>🤷 ¡Cada uno elige diferente!</p>
