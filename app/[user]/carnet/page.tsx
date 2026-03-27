@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
 import { getBothProfiles, upsertProfile, type UserProfile } from "@/lib/profiles";
@@ -68,6 +68,7 @@ const PODER: Record<string, string> = {
 export default function CarnetPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { activeUser, setUser } = useUserStore();
   const user = params.user as UserName;
   useEffect(() => { if (user !== activeUser) setUser(user, user); }, [user]);
@@ -77,7 +78,8 @@ export default function CarnetPage() {
   const otherName  = isAle ? "Rut" : "Alejandro";
   const otherUser  = isAle ? "rut" : "alejandro";
 
-  const [tab, setTab] = useState<"carnets" | "puntos">("carnets");
+  const initialTab = searchParams.get("tab") === "puntos" ? "puntos" : "carnets";
+  const [tab, setTab] = useState<"carnets" | "puntos">(initialTab);
 
   // ── Carnets state ──
   const [profiles,  setProfiles]  = useState<{ alejandro: UserProfile | null; rut: UserProfile | null }>({ alejandro: null, rut: null });
