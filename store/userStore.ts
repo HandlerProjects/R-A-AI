@@ -10,12 +10,22 @@ interface UserStore {
   clearUser: () => void;
 }
 
+// UUID válido: 36 caracteres con guiones
+function isUUID(id: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+}
+
 export const useUserStore = create<UserStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       activeUser: null,
       userId: null,
-      setUser: (user, id) => set({ activeUser: user, userId: id }),
+      setUser: (user, id) => set((state) => ({
+        activeUser: user,
+        // Solo actualiza userId si el nuevo id es un UUID real,
+        // o si aún no hay userId guardado
+        userId: isUUID(id) ? id : (isUUID(state.userId ?? "") ? state.userId : id),
+      })),
       clearUser: () => set({ activeUser: null, userId: null }),
     }),
     {

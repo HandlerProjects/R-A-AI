@@ -1,14 +1,26 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useUserStore } from "@/store/userStore";
 import { motion, AnimatePresence } from "framer-motion";
+import { getUserId } from "@/lib/memory";
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
   const router = useRouter();
-  const { activeUser } = useUserStore();
+  const { activeUser, userId, setUser } = useUserStore();
   const urlUser = params.user as string;
+
+  // Carga el UUID real de Supabase si aún no lo tenemos
+  useEffect(() => {
+    if (!urlUser) return;
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}/.test(userId ?? "");
+    if (isUUID) return; // ya tenemos el UUID real
+    getUserId(urlUser as "alejandro" | "rut").then((id) => {
+      if (id) setUser(urlUser as "alejandro" | "rut", id);
+    });
+  }, [urlUser]);
 
   // Solo muestra el banner cuando estás viendo el perfil del otro
   const isViewingOther = activeUser && urlUser && activeUser !== urlUser;
