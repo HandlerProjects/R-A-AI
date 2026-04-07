@@ -68,7 +68,7 @@ export default function ViajesPage() {
   const { activeUser, userId, setUser } = useUserStore();
 
   const userParam = params.user as UserName;
-  const resolvedUserId = userId ?? userParam;
+  const resolvedUserId = null; // compartido entre Alejandro y Rut
 
   const [phase, setPhase] = useState<"discovery" | "chat">("discovery");
   const [activeFilter, setActiveFilter] = useState("Todos");
@@ -93,9 +93,8 @@ export default function ViajesPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // Cargar historial al montar
+  // Cargar historial al montar (resolvedUserId null = compartido)
   useEffect(() => {
-    if (!resolvedUserId) return;
     loadConversation(resolvedUserId, "viajes").then((conv) => {
       if (conv && conv.messages.length > 0) {
         setMessages(conv.messages as Message[]);

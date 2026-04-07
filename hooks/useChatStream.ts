@@ -10,7 +10,7 @@ export interface Message {
 }
 
 interface UseChatStreamOptions {
-  userId: string;
+  userId: string | null;
   userName: string;
   module: string;
   /** Si false, no persiste en Supabase. Por defecto true. */
@@ -28,9 +28,13 @@ export function useChatStream({ userId, userName, module, persist = true }: UseC
   const [isLoading, setIsLoading] = useState(false);
   const conversationIdRef = useRef<string | undefined>(undefined);
 
+  // UUID válido o null (compartido). Si es nombre string sin UUID aún, no cargamos.
+  const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(id);
+  const canPersist = userId === null || (userId !== null && isUUID(userId));
+
   // Cargar historial al montar
   useEffect(() => {
-    if (!persist || !userId) return;
+    if (!persist || !canPersist) return;
     loadConversation(userId, module).then((conv) => {
       if (conv && conv.messages.length > 0) {
         setMessages(conv.messages as Message[]);
@@ -97,7 +101,7 @@ export function useChatStream({ userId, userName, module, persist = true }: UseC
         setIsLoading(false);
 
         // Guardar conversación completa en Supabase
-        if (persist) {
+        if (persist && canPersist) {
           try {
             const finalMessages = [...updatedMessages, { role: "assistant" as const, content: assistantContent }];
             const savedId = await saveConversation(userId, module, finalMessages, conversationIdRef.current);

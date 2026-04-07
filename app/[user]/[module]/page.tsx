@@ -50,7 +50,8 @@ export default function ModulePage() {
   const isAlejandro = userParam === "alejandro";
   const accentColor = isAlejandro ? "#1C1C1E" : "#FF2D55";
   const isSharedModule = SHARED_MODULES.includes(moduleParam);
-  const effectiveUserId = isSharedModule ? "shared" : userParam;
+  // Para módulos compartidos: null (sin user_id). Para personales: UUID real del store.
+  const effectiveUserId: string | null = isSharedModule ? null : (userId ?? null);
 
   useEffect(() => {
     if (userParam && userParam !== activeUser) setUser(userParam, userParam);
@@ -58,7 +59,8 @@ export default function ModulePage() {
 
   useEffect(() => {
     const loadHistory = async () => {
-      if (!effectiveUserId) return;
+      // Para personales esperamos el UUID real; para compartidos cargamos siempre
+      if (!isSharedModule && !effectiveUserId) return;
       try {
         const conv = await loadConversation(effectiveUserId, moduleParam);
         if (conv && conv.messages.length > 0) {
@@ -68,7 +70,7 @@ export default function ModulePage() {
       } catch {}
     };
     loadHistory();
-  }, [effectiveUserId, moduleParam]);
+  }, [effectiveUserId, moduleParam, isSharedModule]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

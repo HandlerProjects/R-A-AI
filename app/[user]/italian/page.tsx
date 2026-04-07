@@ -73,8 +73,6 @@ export default function ItalianPage() {
   const userParam = params.user as UserName;
   const isAlejandro = userParam === "alejandro";
   const accentColor = isAlejandro ? "#1C1C1E" : "#FF2D55";
-  const resolvedUserId = userId ?? userParam;
-
   useEffect(() => {
     if (userParam) setUser(userParam, userParam);
   }, [userParam, setUser]);
@@ -92,7 +90,7 @@ export default function ItalianPage() {
   const recognitionRef = useRef<any>(null);
 
   const { messages, isLoading, send, deleteConv } = useChatStream({
-    userId: resolvedUserId,
+    userId: null, // compartido entre Alejandro y Rut
     userName: userParam,
     module: "italian",
   });

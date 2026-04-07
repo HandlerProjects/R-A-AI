@@ -69,18 +69,23 @@ export async function saveSharedMemory(
 }
 
 export async function loadConversation(
-  userId: string,
+  userId: string | null,
   module: string
 ): Promise<{ id: string; messages: { role: string; content: string }[] } | null> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("conversations")
     .select("id, messages")
-    .eq("user_id", userId)
     .eq("module", module)
     .order("updated_at", { ascending: false })
-    .limit(1)
-    .single();
+    .limit(1);
 
+  if (userId) {
+    query = query.eq("user_id", userId);
+  } else {
+    query = query.is("user_id", null);
+  }
+
+  const { data, error } = await query.single();
   if (error || !data) return null;
   return data;
 }
@@ -90,7 +95,7 @@ export async function deleteConversation(id: string): Promise<void> {
 }
 
 export async function saveConversation(
-  userId: string,
+  userId: string | null,
   module: string,
   messages: { role: string; content: string }[],
   existingId?: string
@@ -104,7 +109,7 @@ export async function saveConversation(
   } else {
     const { data } = await supabase
       .from("conversations")
-      .insert({ user_id: userId, module, messages })
+      .insert({ user_id: userId ?? null, module, messages })
       .select("id")
       .single();
     return data?.id ?? null;
