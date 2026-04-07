@@ -73,13 +73,12 @@ export function useChatStream({ userId, userName, module, persist = true }: UseC
         let assistantContent = "";
 
         setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-        setIsLoading(false);
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           for (const line of decoder.decode(value).split("\n")) {
-            if (line.startsWith("data: ") && line.slice(6) !== "[DONE]") {
+            if (line.startsWith("data: ") && line.slice(6).trim() !== "[DONE]") {
               try {
                 const t = JSON.parse(line.slice(6)).text;
                 if (t) {
@@ -94,6 +93,8 @@ export function useChatStream({ userId, userName, module, persist = true }: UseC
             }
           }
         }
+
+        setIsLoading(false);
 
         // Guardar conversación completa en Supabase
         if (persist) {

@@ -54,14 +54,17 @@ export default function ContratoPage() {
 
   const handleSaveFirma = async (blob: Blob) => {
     setSaving(true);
-    const file = new File([blob], "firma.png", { type: "image/png" });
-    const url = await uploadPhoto(file, `firmas/${userParam}`);
-    if (url) {
+    try {
+      const file = new File([blob], "firma.png", { type: "image/png" });
+      const url = await uploadPhoto(file, `firmas/${userParam}`);
+      if (!url) throw new Error("No se pudo subir la firma");
       await upsertProfile(userParam, { firma_url: url, firma_at: new Date().toISOString() });
       await load();
+      setShowPad(false);
+    } catch (err: any) {
+      alert("Error al guardar la firma: " + (err.message || "inténtalo de nuevo"));
     }
     setSaving(false);
-    setShowPad(false);
   };
 
   return (
@@ -217,17 +220,39 @@ function SignaturePad({ onSave, onCancel, saving }: {
   onCancel: () => void;
   saving: boolean;
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const drawing   = useRef(false);
+  const canvasRef  = useRef<HTMLCanvasElement>(null);
+  const wrapRef    = useRef<HTMLDivElement>(null);
+  const drawing    = useRef(false);
   const [hasStrokes, setHasStrokes] = useState(false);
 
+  // Escala coordenadas CSS → coordenadas internas del canvas
   const getPos = (e: TouchEvent | MouseEvent, canvas: HTMLCanvasElement) => {
-    const rect = canvas.getBoundingClientRect();
-    if ("touches" in e) {
-      return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
-    }
-    return { x: (e as MouseEvent).clientX - rect.left, y: (e as MouseEvent).clientY - rect.top };
+    const rect   = canvas.getBoundingClientRect();
+    const scaleX = canvas.width  / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = "touches" in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+    return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
   };
+
+  // Ajusta resolución interna del canvas al tamaño real del wrapper
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const wrap   = wrapRef.current;
+    if (!canvas || !wrap) return;
+
+    const { width, height } = wrap.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width  = width  * dpr;
+    canvas.height = height * dpr;
+
+    const ctx = canvas.getContext("2d")!;
+    ctx.scale(dpr, dpr);
+    ctx.strokeStyle = "#1a0a00";
+    ctx.lineWidth   = 2.5;
+    ctx.lineCap     = "round";
+    ctx.lineJoin    = "round";
+  }, []);
 
   const startDraw = useCallback((e: TouchEvent | MouseEvent) => {
     e.preventDefault();
@@ -254,11 +279,6 @@ function SignaturePad({ onSave, onCancel, saving }: {
 
   useEffect(() => {
     const canvas = canvasRef.current; if (!canvas) return;
-    const ctx = canvas.getContext("2d"); if (!ctx) return;
-    ctx.strokeStyle = "#1a0a00";
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
 
     canvas.addEventListener("touchstart", startDraw, { passive: false });
     canvas.addEventListener("touchmove",  draw,      { passive: false });
@@ -281,6 +301,11 @@ function SignaturePad({ onSave, onCancel, saving }: {
     const canvas = canvasRef.current; if (!canvas) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Restaurar estilos tras limpiar
+    ctx.strokeStyle = "#1a0a00";
+    ctx.lineWidth   = 2.5;
+    ctx.lineCap     = "round";
+    ctx.lineJoin    = "round";
     setHasStrokes(false);
   };
 
@@ -309,12 +334,10 @@ function SignaturePad({ onSave, onCancel, saving }: {
           <button onClick={onCancel} style={{ background: "rgba(139,90,43,0.1)", border: "none", borderRadius: "50%", width: 30, height: 30, cursor: "pointer", fontSize: 14, color: "#6b4423" }}>✕</button>
         </div>
 
-        <div style={{ background: "white", borderRadius: 16, border: "2px dashed rgba(139,90,43,0.3)", overflow: "hidden", marginBottom: 14, position: "relative" }}>
+        <div ref={wrapRef} style={{ background: "white", borderRadius: 16, border: "2px dashed rgba(139,90,43,0.3)", overflow: "hidden", marginBottom: 14, position: "relative", height: 160 }}>
           <canvas
             ref={canvasRef}
-            width={340}
-            height={160}
-            style={{ width: "100%", height: 160, display: "block", touchAction: "none", cursor: "crosshair" }}
+            style={{ width: "100%", height: "100%", display: "block", touchAction: "none", cursor: "crosshair" }}
           />
           {!hasStrokes && (
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
