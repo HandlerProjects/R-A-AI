@@ -9,7 +9,9 @@ export interface UserProfile {
   user_name: string;
   photo_url: string | null;
   apodo: string | null;
-  fecha_inicio: string | null; // ISO date "YYYY-MM-DD"
+  fecha_inicio: string | null;
+  firma_url: string | null;
+  firma_at: string | null;
   updated_at: string;
 }
 
