@@ -65,7 +65,7 @@ export default function ContratoPage() {
   };
 
   return (
-    <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", background: "#f5ede0", overflow: "hidden" }}>
+    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "#f5ede0" }}>
 
       {/* Header */}
       <div style={{ padding: "14px 20px 12px", paddingTop: `calc(14px + env(safe-area-inset-top))`, background: "rgba(245,237,224,0.95)", backdropFilter: "blur(10px)", borderBottom: "1px solid rgba(139,90,43,0.15)", flexShrink: 0, zIndex: 10 }}>
