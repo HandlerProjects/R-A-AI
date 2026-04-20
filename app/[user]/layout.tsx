@@ -16,10 +16,40 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!urlUser) return;
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}/.test(userId ?? "");
-    if (isUUID) return; // ya tenemos el UUID real
+    if (isUUID) return;
     getUserId(urlUser as "alejandro" | "rut").then((id) => {
       if (id) setUser(urlUser as "alejandro" | "rut", id);
     });
+  }, [urlUser]);
+
+  // Renueva la suscripción push en cada apertura de la app (silencioso)
+  useEffect(() => {
+    if (!urlUser || typeof window === "undefined") return;
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+    if (Notification.permission !== "granted") return;
+
+    (async () => {
+      try {
+        const reg = await navigator.serviceWorker.register("/sw.js");
+        await navigator.serviceWorker.ready;
+        // Obtener suscripción actual o crear una nueva
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+          });
+        }
+        // Upsert silencioso en Supabase
+        await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription: sub.toJSON(), userName: urlUser }),
+        });
+      } catch {
+        // Silencioso — no interrumpir la experiencia si falla
+      }
+    })();
   }, [urlUser]);
 
   // Solo muestra el banner cuando estás viendo el perfil del otro
