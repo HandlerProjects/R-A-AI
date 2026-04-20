@@ -716,7 +716,7 @@ export default function RomaPage() {
   const [expanded, setExpanded] = useState<number | null>(null);
 
   return (
-    <div style={{ minHeight: "100dvh", background: "#080810", color: "white", fontFamily: "-apple-system,'SF Pro Display',sans-serif", overflowX: "hidden" }}>
+    <div style={{ height: "100dvh", overflowY: "auto", overflowX: "hidden", background: "#080810", color: "white", fontFamily: "-apple-system,'SF Pro Display',sans-serif" }}>
 
       {/* ── Hero ───────────────────────────────────────────── */}
       <div style={{ position: "relative", height: 420 }}>
