@@ -9,7 +9,8 @@ import { useUserStore, UserName } from "@/store/userStore";
 const DEPARTURE = new Date("2026-04-24T05:20:00");
 
 /* ─── Tipos ───────────────────────────────────────────────────── */
-type Day = "jueves" | "viernes" | "guia";
+type ItineraryDay = "jueves" | "viernes";
+type Day = ItineraryDay | "guia";
 type EventType = "transport" | "food" | "culture" | "shop" | "hotel" | "free";
 
 interface RomaEvent {
@@ -61,7 +62,7 @@ const PHOTOS = {
 };
 
 /* ─── Itinerario ──────────────────────────────────────────────── */
-const ITINERARY: Record<Day, RomaEvent[]> = {
+const ITINERARY: Record<ItineraryDay, RomaEvent[]> = {
   jueves: [
     {
       time: "05:20",
@@ -805,7 +806,7 @@ export default function RomaPage() {
       <div style={{ padding: "0 16px 48px" }}>
         <AnimatePresence mode="wait">
           <motion.div key={day} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.22 }}>
-            {ITINERARY[day].map((ev, i) => {
+            {ITINERARY[day as ItineraryDay].map((ev, i) => {
               const tc = TYPE[ev.tipo];
               const isOpen = expanded === i;
               return (
@@ -826,7 +827,7 @@ export default function RomaPage() {
                         onClick={() => setExpanded(isOpen ? null : i)}>
                         {ev.icon}
                       </motion.div>
-                      {i < ITINERARY[day].length - 1 && (
+                      {i < ITINERARY[day as ItineraryDay].length - 1 && (
                         <div style={{ width: 2, flex: 1, minHeight: 16, background: "rgba(255,255,255,0.06)", margin: "4px 0" }} />
                       )}
                     </div>
