@@ -9,7 +9,7 @@ import { useUserStore, UserName } from "@/store/userStore";
 const DEPARTURE = new Date("2026-04-24T05:20:00");
 
 /* ─── Tipos ───────────────────────────────────────────────────── */
-type Day = "jueves" | "viernes";
+type Day = "jueves" | "viernes" | "guia";
 type EventType = "transport" | "food" | "culture" | "shop" | "hotel" | "free";
 
 interface RomaEvent {
@@ -335,6 +335,269 @@ const ITINERARY: Record<Day, RomaEvent[]> = {
   ],
 };
 
+/* ─── Guía de sugerencias ─────────────────────────────────────── */
+interface Sugerencia {
+  icon: string;
+  title: string;
+  subtitle: string;
+  detail: string;
+  maps?: string;
+  web?: string;
+  badge?: string;
+  badgeColor?: string;
+}
+
+interface GuiaSeccion {
+  id: string;
+  emoji: string;
+  titulo: string;
+  color: string;
+  items: Sugerencia[];
+}
+
+const GUIA: GuiaSeccion[] = [
+  {
+    id: "manana",
+    emoji: "🌅",
+    titulo: "Mañanas",
+    color: "#FF9F0A",
+    items: [
+      {
+        icon: "☕",
+        title: "Sant'Eustachio il Caffè",
+        subtitle: "Piazza di Sant'Eustachio 82 · Centro Storico",
+        detail: "El mejor café de Roma. Cappuccino con mezcla secreta desde 1938. Abre 7:30h. A 2 min del hotel.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Sant'Eustachio+il+Caffè+Roma",
+        web: "https://www.santeustachioilcaffe.it",
+        badge: "Histórico",
+        badgeColor: "#FF9F0A",
+      },
+      {
+        icon: "🥐",
+        title: "Forno Campo de' Fiori",
+        subtitle: "Piazza Campo de' Fiori 22 · 8 min del hotel",
+        detail: "Horno artesanal desde el siglo XIX. Las mejores pizzas bianche (rellenas de aceituna, cebolla, romero) para desayunar o picar. Siempre hay cola y siempre merece la pena.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Forno+Campo+de+Fiori+Roma",
+        badge: "Antes de las 10h",
+        badgeColor: "#FF6B35",
+      },
+      {
+        icon: "🏪",
+        title: "Mercato di Testaccio",
+        subtitle: "Via Beniamino Franklin · Testaccio",
+        detail: "El mercado de barrio más auténtico de Roma. Puestos de queso, embutidos, fruta, y algunos de los mejores bocadillos de la ciudad. Cierra a las 14h. Si tenéis mañana libre, aquí están los mejores productores locales.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Mercato+di+Testaccio+Roma",
+        badge: "Abre hasta las 14h",
+        badgeColor: "#34C759",
+      },
+    ],
+  },
+  {
+    id: "tarde",
+    emoji: "🌆",
+    titulo: "Tardes",
+    color: "#5E5CE6",
+    items: [
+      {
+        icon: "🍟",
+        title: "Supplì Roma · Campo de' Fiori",
+        subtitle: "Via di S. Giovanni in Laterano 32 · también en Campo de' Fiori",
+        detail: "El supplì es la versión romana del arancino. Arroz con ragú y mozzarella, rebozado y frito. El de Supplì Roma es el más reconocido. Perfecto para picar a media tarde sin tener que sentarse en ningún sitio.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Supplì+Roma+Via+San+Giovanni+Laterano",
+        badge: "Snack perfecto",
+        badgeColor: "#FF6B35",
+      },
+      {
+        icon: "🏛️",
+        title: "Trastevere · Paseo libre",
+        subtitle: "Barrio bohemio · 20 min del hotel",
+        detail: "El barrio más fotogénico de Roma. Callejones adoquinados, hiedra en las fachadas. Para recorrer a las 17-18h cuando empieza a animarse y la luz es dorada. Sin plan fijo.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Trastevere+Roma",
+        badge: "La hora dorada",
+        badgeColor: "#FF9F0A",
+      },
+      {
+        icon: "⛲",
+        title: "Piazza Navona al atardecer",
+        subtitle: "5 min del hotel · Centro Storico",
+        detail: "La Fontana dei Quattro Fiumi de Bernini cambia completamente al caer el sol. Sin aglomeraciones, con un gelato en mano. Los artistas callejeros también montan aquí.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Piazza+Navona+Roma",
+      },
+    ],
+  },
+  {
+    id: "comer",
+    emoji: "🍝",
+    titulo: "Dónde comer",
+    color: "#FF2D55",
+    items: [
+      {
+        icon: "🍴",
+        title: "Roscioli · La carbonara definitiva",
+        subtitle: "Via dei Giubbonari 21 · 8 min del hotel",
+        detail: "Considerado el mejor restaurante de cocina romana por muchos críticos. Su carbonara es un estándar de referencia. También tienen una delle mejores selecciones de quesos y embutidos italianos del mundo. Reservar con días de antelación.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Roscioli+Via+dei+Giubbonari+Roma",
+        web: "https://www.salumeriaroscioli.com",
+        badge: "Reservar antes",
+        badgeColor: "#FF2D55",
+      },
+      {
+        icon: "🐄",
+        title: "Flavio al Velavevodetto · Testaccio",
+        subtitle: "Via di Monte Testaccio 97 · Testaccio",
+        detail: "Cocina romana de tripas. El barrio Testaccio era el matadero de Roma y su gastronomía refleja eso. Coda alla vaccinara (rabo de toro), pajata, rigatoni con pajata. Si os atrevéis, es una experiencia única. Si no, la pasta simple también está entre las mejores.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Flavio+al+Velavevodetto+Testaccio+Roma",
+        badge: "Auténtico romano",
+        badgeColor: "#8E8E93",
+      },
+      {
+        icon: "🥗",
+        title: "Osteria dell'Ingegno · cerca del Panthéon",
+        subtitle: "Piazza di Pietra 45 · 5 min del hotel",
+        detail: "Con vistas a un templo romano de verdad. Cocina romana moderna, carta de vinos de primera. Buena opción si queréis comer cerca del hotel sin andar mucho.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Osteria+dell'Ingegno+Roma+Piazza+di+Pietra",
+      },
+    ],
+  },
+  {
+    id: "tomar",
+    emoji: "🍸",
+    titulo: "Tomar algo · Vermouths",
+    color: "#AF52DE",
+    items: [
+      {
+        icon: "🍷",
+        title: "Bar San Calisto · Trastevere",
+        subtitle: "Piazza San Calisto 3 · Trastevere",
+        detail: "El bar más auténtico y asequible de Roma. Vermut y Campari soda a menos de 2€. Sin decoración, sin turistas, lleno de romanos. El vermouth de la casa es el mejor que vais a tomar. La terraza de la plaza es perfecta al caer la tarde.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Bar+San+Calisto+Trastevere+Roma",
+        badge: "El más auténtico",
+        badgeColor: "#AF52DE",
+      },
+      {
+        icon: "🍹",
+        title: "Freni e Frizioni · Trastevere",
+        subtitle: "Via del Politeama 4 · Trastevere",
+        detail: "Antigua gasolinera reconvertida en bar. El aperitivo empieza a las 18:30h con buffet libre incluido en la copa (normalmente 10€). Spritz, Negroni, Americano. Terraza exterior muy animada.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Freni+e+Frizioni+Trastevere+Roma",
+        web: "https://www.freniefrizioni.com",
+        badge: "Buffet aperitivo 18:30h",
+        badgeColor: "#FF9F0A",
+      },
+      {
+        icon: "🫗",
+        title: "Il Sorpasso · Prati",
+        subtitle: "Via Properzio 31 · Prati (cerca del Vaticano)",
+        detail: "Barra de vermouths y vinos naturales. Carta de más de 30 referencias. Perfecto si estáis en Prati tras el Vaticano. También sirven comida hasta tarde. Decoración de bodega vintage muy cuidada.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Il+Sorpasso+Prati+Roma",
+        web: "https://www.ilsorpasso.com",
+        badge: "30+ vermouths",
+        badgeColor: "#5E5CE6",
+      },
+    ],
+  },
+  {
+    id: "tiendas",
+    emoji: "🛍️",
+    titulo: "Tiendas · Reventa & Joyas ocultas",
+    color: "#34C759",
+    items: [
+      {
+        icon: "🏷️",
+        title: "Mercato Monti Urban Market",
+        subtitle: "Via Leonina 46 · Hotel Palatino · Monti",
+        detail: "Mercadillo interior de fin de semana (sábado y domingo) con vendedores seleccionados. Mezcla de vintage de calidad, diseñadores emergentes italianos y piezas únicas. Ropa, calzado, accesorios. Muy diferente al Porta Portese — más curado y con mejor calidad.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Mercato+Monti+Urban+Market+Roma",
+        web: "https://www.mercatomonti.com",
+        badge: "Fin de semana",
+        badgeColor: "#34C759",
+      },
+      {
+        icon: "🧥",
+        title: "Le Gallinelle · Monti",
+        subtitle: "Via del Boschetto 76 · Monti",
+        detail: "La tienda más especial de Monti. Wilma Silvestri, la propietaria, lleva décadas recogiendo piezas únicas: tejidos antiguos, bordados a mano, trajes de los 60s-70s impecables. No es barato, pero lo que hay dentro no lo vais a encontrar en ningún otro sitio.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Le+Gallinelle+Via+del+Boschetto+Roma",
+        badge: "Pieza única garantizada",
+        badgeColor: "#FF9F0A",
+      },
+      {
+        icon: "👟",
+        title: "InOrOut · Sneakers & Streetwear · Monti",
+        subtitle: "Via Urbana 24 · Monti",
+        detail: "Tienda de reventa de zapatillas y ropa de street de segunda mano. Nike vintage, Adidas de edición limitada, Supreme usado. Todo seleccionado. Si sois de zapatillas, aquí pueden aparecer joyas que en España no vais a ver ni en eBay.",
+        maps: "https://www.google.com/maps/search/?api=1&query=InOrOut+Via+Urbana+Roma",
+        badge: "Sneakers reventa",
+        badgeColor: "#5E5CE6",
+      },
+      {
+        icon: "👗",
+        title: "Vestiti Usati Cinzia · Gov. Vecchio",
+        subtitle: "Via del Governo Vecchio 45 · Centro Storico",
+        detail: "Segunda mano pura. Cinzia vende por peso en algunos momentos del año. Ropa sin seleccionar de verdad: tienes que buscar entre perchas, pero las joyas están ahí. Americana italiana de los 80s, vestidos de seda, chaquetas de cuero. La experiencia de buscar como en un rastrillo de calidad.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Vestiti+Usati+Cinzia+Via+Governo+Vecchio+Roma",
+        badge: "A veces por peso",
+        badgeColor: "#FF2D55",
+      },
+      {
+        icon: "🪡",
+        title: "Omero & Cecilia · Gov. Vecchio",
+        subtitle: "Via del Governo Vecchio 110 · Centro Storico",
+        detail: "Segunda mano mezclada con piezas de diseñador. Aquí encontraréis tanto un vestido de los 70s a 10€ como un abrigo de Marni de segunda mano. Sin orden aparente, hay que buscar. Los mejores días son entre semana cuando no hay turistas.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Omero+Cecilia+Via+Governo+Vecchio+Roma",
+        badge: "Mezcla high-low",
+        badgeColor: "#AF52DE",
+      },
+      {
+        icon: "✨",
+        title: "Cherché Mi · Segunda mano diseñador",
+        subtitle: "Via del Governo Vecchio 22 · Centro Storico",
+        detail: "Consignment store de diseñador. Prada, Gucci, Miu Miu, Valentino de segunda mano con garantía de autenticidad. Si buscáis una joya de diseño italiano sin pagar precio de boutique, aquí es. Precios desde 30€ hasta varios cientos según pieza.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Cherché+Mi+Via+del+Governo+Vecchio+Roma",
+        badge: "Diseñador 2ª mano",
+        badgeColor: "#FF9F0A",
+      },
+      {
+        icon: "🎽",
+        title: "Pigneto Vintage · Barrio Pigneto",
+        subtitle: "Via del Pigneto · Pigneto (NE Roma)",
+        detail: "El barrio Pigneto es el más 'underground' de Roma. Varias tiendas sin nombre oficial que abren de forma irregular, llenas de ropa sin precio fijado donde se negocia. Si tenéis tiempo libre y ganas de descubrir algo, aquí es donde los romanos más fashionistas compran. Vale la excursión.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Pigneto+Roma+vintage",
+        badge: "Off the radar",
+        badgeColor: "#34C759",
+      },
+    ],
+  },
+  {
+    id: "gelato",
+    emoji: "🍦",
+    titulo: "Helados · Los mejores",
+    color: "#64D2FF",
+    items: [
+      {
+        icon: "🍦",
+        title: "Fatamorgana · Trastevere",
+        subtitle: "Via Roma Libera 11 · Trastevere",
+        detail: "La mejor de Roma. Ingredientes naturales, sabores únicos: Basilico e Pistacchio, Rosa e Lampone, Cioccolato fondente e sale marino. Vegana y sin gluten pero para todos. Imprescindible.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Fatamorgana+Trastevere+Roma",
+        web: "https://www.gelateriafatamorgana.com",
+        badge: "La mejor de Roma",
+        badgeColor: "#FF2D55",
+      },
+      {
+        icon: "🍨",
+        title: "Giolitti · Clásico histórico",
+        subtitle: "Via degli Uffici del Vicario 40 · 3 min del hotel",
+        detail: "Gelatería desde 1900, a 3 minutos del hotel. Sabores tradicionales perfectos. El cioccolato fondente y el pistacchio son los imprescindibles. Perfecta si pasáis por allí sin buscarla.",
+        maps: "https://www.google.com/maps/search/?api=1&query=Giolitti+Gelateria+Roma",
+        web: "https://www.giolitti.it",
+        badge: "Desde 1900 · junto al hotel",
+        badgeColor: "#FF9F0A",
+      },
+    ],
+  },
+];
+
 /* ─── Countdown hook ──────────────────────────────────────────── */
 function useCountdown() {
   const [t, setT] = useState({ days: 0, hours: 0, minutes: 0, done: false });
@@ -369,6 +632,70 @@ function LinkBtn({ href, icon, label, color }: { href: string; icon: string; lab
       style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 20, background: `${color}18`, border: `1px solid ${color}40`, color, fontSize: 11, fontWeight: 700, textDecoration: "none", flexShrink: 0 }}>
       {icon} {label}
     </a>
+  );
+}
+
+/* ─── Componente Guía ────────────────────────────────────────── */
+function GuiaView() {
+  const [openSection, setOpenSection] = useState<string | null>("tiendas");
+
+  return (
+    <div style={{ padding: "0 16px 48px" }}>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", margin: "0 0 20px", lineHeight: 1.6 }}>
+        No es un itinerario fijo — es una colección de sitios para cuando no sabéis qué hacer o queréis salir de lo típico. Toca cada sección para explorar.
+      </p>
+      {GUIA.map((sec) => {
+        const isOpen = openSection === sec.id;
+        return (
+          <div key={sec.id} style={{ marginBottom: 12 }}>
+            <motion.button whileTap={{ scale: 0.98 }} onClick={() => setOpenSection(isOpen ? null : sec.id)}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: 16, border: `1px solid ${isOpen ? sec.color + "50" : "rgba(255,255,255,0.08)"}`, background: isOpen ? `${sec.color}12` : "rgba(255,255,255,0.04)", cursor: "pointer", fontFamily: "inherit" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 22 }}>{sec.emoji}</span>
+                <span style={{ fontSize: 16, fontWeight: 700, color: isOpen ? sec.color : "white" }}>{sec.titulo}</span>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontWeight: 500 }}>{sec.items.length} sitios</span>
+              </div>
+              <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </motion.div>
+            </motion.button>
+
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }} style={{ overflow: "hidden" }}>
+                  <div style={{ paddingTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+                    {sec.items.map((item, i) => (
+                      <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "14px 14px 12px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, flexWrap: "wrap" }}>
+                            <span style={{ fontSize: 16 }}>{item.icon}</span>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{item.title}</span>
+                            {item.badge && (
+                              <span style={{ fontSize: 9, fontWeight: 700, color: item.badgeColor, background: `${item.badgeColor}18`, padding: "2px 8px", borderRadius: 20, border: `1px solid ${item.badgeColor}30` }}>
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: "0 0 6px" }}>{item.subtitle}</p>
+                        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", margin: "0 0 10px", lineHeight: 1.6 }}>{item.detail}</p>
+                        {(item.maps || item.web) && (
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                            {item.maps && <LinkBtn href={item.maps} icon="📍" label="Maps" color={sec.color} />}
+                            {item.web && <LinkBtn href={item.web} icon="🌐" label="Web" color="#64D2FF" />}
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -446,21 +773,35 @@ export default function RomaPage() {
         ))}
       </div>
 
-      {/* ── Tabs de día ─────────────────────────────────── */}
-      <div style={{ padding: "12px 16px 16px", display: "flex", gap: 8 }}>
-        {(["jueves", "viernes"] as Day[]).map((d) => (
-          <motion.button key={d} whileTap={{ scale: 0.95 }} onClick={() => { setDay(d); setExpanded(null); }}
-            style={{ flex: 1, padding: "13px", borderRadius: 16, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 14, fontFamily: "inherit", transition: "all 0.2s",
-              background: day === d ? "white" : "rgba(255,255,255,0.07)",
-              color: day === d ? "#080810" : "rgba(255,255,255,0.4)",
-              boxShadow: day === d ? "0 4px 20px rgba(255,255,255,0.15)" : "none",
+      {/* ── Tabs ────────────────────────────────────────── */}
+      <div style={{ padding: "12px 16px 16px", display: "flex", gap: 6 }}>
+        {([
+          { id: "jueves", label: "Jue 24" },
+          { id: "viernes", label: "Vie 25" },
+          { id: "guia", label: "💡 Ideas" },
+        ] as { id: Day; label: string }[]).map((tab) => (
+          <motion.button key={tab.id} whileTap={{ scale: 0.95 }} onClick={() => { setDay(tab.id); setExpanded(null); }}
+            style={{ flex: 1, padding: "11px 6px", borderRadius: 14, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 13, fontFamily: "inherit", transition: "all 0.2s",
+              background: day === tab.id ? "white" : "rgba(255,255,255,0.07)",
+              color: day === tab.id ? "#080810" : "rgba(255,255,255,0.4)",
+              boxShadow: day === tab.id ? "0 4px 20px rgba(255,255,255,0.15)" : "none",
             }}>
-            {d === "jueves" ? "📅 Jue 24 Abr" : "📅 Vie 25 Abr"}
+            {tab.label}
           </motion.button>
         ))}
       </div>
 
+      {/* ── Contenido ────────────────────────────────────── */}
+      <AnimatePresence mode="wait">
+        {day === "guia" ? (
+          <motion.div key="guia" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <GuiaView />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
       {/* ── Timeline ─────────────────────────────────────── */}
+      {day !== "guia" && (
       <div style={{ padding: "0 16px 48px" }}>
         <AnimatePresence mode="wait">
           <motion.div key={day} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.22 }}>
@@ -549,6 +890,7 @@ export default function RomaPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+      )}
     </div>
   );
 }
