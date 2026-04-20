@@ -60,16 +60,21 @@ export default function HomePage() {
   const ownModules = isAlejandro ? ALEJANDRO_MODULES : RUT_MODULES;
   const greeting = getGreeting();
 
-  const [countdown, setCountdown] = useState<{ days: number; hours: number; done: boolean } | null>(null);
+  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; done: boolean } | null>(null);
   useEffect(() => {
-    const target = new Date("2026-04-16T00:00:00").getTime();
+    const target = new Date("2026-04-24T05:20:00").getTime();
     const tick = () => {
       const diff = target - Date.now();
-      if (diff <= 0) { setCountdown({ days: 0, hours: 0, done: true }); return; }
-      setCountdown({ days: Math.floor(diff / 86400000), hours: Math.floor((diff % 86400000) / 3600000), done: false });
+      if (diff <= 0) { setCountdown({ days: 0, hours: 0, minutes: 0, done: true }); return; }
+      setCountdown({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        minutes: Math.floor((diff % 3600000) / 60000),
+        done: false,
+      });
     };
     tick();
-    const id = setInterval(tick, 60000);
+    const id = setInterval(tick, 30000);
     return () => clearInterval(id);
   }, []);
 
@@ -100,33 +105,31 @@ export default function HomePage() {
             </h1>
           </div>
 
-          {/* Countdown badge */}
+          {/* Roma countdown mini badge */}
           {countdown && !countdown.done && (
-            <motion.div
+            <motion.button
+              onClick={() => router.push(`/${userParam}/roma`)}
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, type: "spring", stiffness: 300, damping: 22 }}
+              whileTap={{ scale: 0.93 }}
               style={{
                 display: "flex", flexDirection: "column", alignItems: "center",
-                background: "linear-gradient(135deg, #fff0f3 0%, #fff5f0 100%)",
-                border: "1px solid rgba(255,45,85,0.2)",
-                borderRadius: 14, padding: "6px 10px",
-                boxShadow: "0 2px 10px rgba(255,45,85,0.12)",
-                marginRight: 8,
+                background: "linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 100%)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                borderRadius: 14, padding: "7px 11px",
+                boxShadow: "0 4px 16px rgba(0,0,80,0.25)",
+                marginRight: 8, cursor: "pointer",
               }}
             >
-              <div style={{ display: "flex", gap: 3 }}>
-                {["💗", "🩷"].map((h, i) => (
-                  <motion.span key={i} animate={{ y: [0, -3, 0] }} transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.3, ease: "easeInOut" }} style={{ fontSize: 11 }}>{h}</motion.span>
-                ))}
-              </div>
-              <span style={{ fontSize: 15, fontWeight: 800, color: "#FF2D55", lineHeight: 1.1, fontVariantNumeric: "tabular-nums" }}>
+              <span style={{ fontSize: 14 }}>🇮🇹</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "white", lineHeight: 1.1, fontVariantNumeric: "tabular-nums" }}>
                 {countdown.days}d {countdown.hours}h
               </span>
-              <span style={{ fontSize: 8, fontWeight: 600, color: "#FF2D55", opacity: 0.55, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                Italia 🇮🇹
+              <span style={{ fontSize: 8, fontWeight: 600, color: "rgba(255,255,255,0.5)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                Roma
               </span>
-            </motion.div>
+            </motion.button>
           )}
 
           <button
@@ -163,6 +166,52 @@ export default function HomePage() {
 
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px", paddingBottom: `calc(84px + env(safe-area-inset-bottom))` }}>
+
+        {/* ROMA CARD */}
+        {countdown && !countdown.done && (
+          <motion.button
+            onClick={() => router.push(`/${userParam}/roma`)}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.4 }}
+            whileTap={{ scale: 0.97 }}
+            style={{ width: "100%", marginBottom: 20, borderRadius: 22, overflow: "hidden", border: "none", cursor: "pointer", padding: 0, background: "none", display: "block" }}
+          >
+            <div style={{ background: "linear-gradient(135deg, #0a0a0f 0%, #101428 50%, #0f1a0a 100%)", padding: "18px 20px", position: "relative", overflow: "hidden", borderRadius: 22, border: "1px solid rgba(255,255,255,0.08)" }}>
+              {/* Decorative circles */}
+              <div style={{ position: "absolute", top: -30, right: -20, width: 130, height: 130, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,122,255,0.2) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ position: "absolute", bottom: -20, left: 20, width: 100, height: 100, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,45,85,0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 22 }}>🇮🇹</span>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: "white", letterSpacing: "-0.3px" }}>Roma · 24–25 Abr</span>
+                  </div>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", margin: "0 0 12px", fontWeight: 500 }}>
+                    🚌 05:20 · 🏛️ Coliseo · ⛪ Vaticano
+                  </p>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    {[
+                      { v: countdown.days, l: "días" },
+                      { v: countdown.hours, l: "horas" },
+                      { v: countdown.minutes, l: "min" },
+                    ].map(({ v, l }) => (
+                      <div key={l} style={{ textAlign: "center" }}>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: "white", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{String(v).padStart(2, "0")}</div>
+                        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                  <div style={{ fontSize: 40 }}>🏛️</div>
+                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Ver plan →</span>
+                </div>
+              </div>
+            </div>
+          </motion.button>
+        )}
 
         {/* DAILY MODULES */}
         <section style={{ marginBottom: 28 }}>

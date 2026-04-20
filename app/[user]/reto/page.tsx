@@ -73,7 +73,14 @@ export default function RetoPage() {
     if (!inputText.trim() || !reto) return;
     setSaving(true);
     let photoUrl: string | null = null;
-    if (photoFile) photoUrl = await uploadPhoto(photoFile, "retos");
+    if (photoFile) {
+      photoUrl = await uploadPhoto(photoFile, "retos");
+      if (!photoUrl) {
+        alert("⚠️ No se pudo subir la foto. Comprueba que el bucket ra-photos existe y es público en Supabase.");
+        setSaving(false);
+        return;
+      }
+    }
     await saveRespuesta(reto.id, userParam, inputText.trim(), photoUrl);
     const updated = await getRespuestas(reto.id);
     setRespuestas(updated);
