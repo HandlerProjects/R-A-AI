@@ -63,6 +63,7 @@ export default function SplashPage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [dateStr, setDateStr] = useState("");
   const [msgIndex, setMsgIndex] = useState(0);
+  const [showRoma, setShowRoma] = useState(false);
   const countdown = useCountdown(REUNION_DATE);
 
   useEffect(() => {
@@ -307,8 +308,90 @@ export default function SplashPage() {
             <p style={{ fontSize: 10, color: "#FF2D55", opacity: 0.5, margin: "10px 0 0", letterSpacing: "0.05em" }}>
               24 de abril · Roma 🇮🇹
             </p>
+
+            {/* Botón desplegar */}
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={() => setShowRoma((v) => !v)}
+              style={{ marginTop: 14, width: "100%", padding: "9px", borderRadius: 12, border: "1px solid rgba(255,45,85,0.2)", background: showRoma ? "rgba(255,45,85,0.08)" : "rgba(255,45,85,0.04)", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#FF2D55", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            >
+              {showRoma ? "Cerrar plan ↑" : "Ver el plan de Roma 🗺️"}
+            </motion.button>
           </motion.div>
         )}
+
+        {/* Panel itinerario Roma */}
+        <AnimatePresence>
+          {showRoma && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              style={{ overflow: "hidden", width: "100%", maxWidth: 340 }}
+            >
+              <div style={{ marginTop: 12, background: "#080810", borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
+                {/* Mini hero */}
+                <div style={{ position: "relative", height: 120, overflow: "hidden" }}>
+                  <img src="https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=600&q=80&auto=format&fit=crop" alt="Roma" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 30%, rgba(8,8,16,0.95) 100%)" }} />
+                  <div style={{ position: "absolute", bottom: 10, left: 14 }}>
+                    <p style={{ fontSize: 18, fontWeight: 800, color: "white", margin: 0 }}>Roma 🇮🇹</p>
+                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", margin: 0 }}>Alejandro & Rut · 24–25 Abril 2026</p>
+                  </div>
+                </div>
+
+                {/* Días */}
+                {[
+                  {
+                    dia: "Jueves 24 Abr",
+                    color: "#5E5CE6",
+                    items: [
+                      { time: "05:20", icon: "🚌", text: "Bus a Roma" },
+                      { time: "08:05", icon: "🏙️", text: "Llegada Tiburtina" },
+                      { time: "08:45", icon: "☕", text: "Desayuno · Sant'Eustachio" },
+                      { time: "10:30", icon: "🏛️", text: "Panthéon + Piazza Navona" },
+                      { time: "14:00", icon: "🛍️", text: "Shopping · Monti" },
+                      { time: "16:45", icon: "🏟️", text: "Coliseo · Entrada reservada ✓" },
+                      { time: "20:30", icon: "🍕", text: "Cena · Da Remo · Testaccio" },
+                    ],
+                  },
+                  {
+                    dia: "Viernes 25 Abr",
+                    color: "#FF2D55",
+                    items: [
+                      { time: "08:30", icon: "☕", text: "Desayuno · Castroni · Prati" },
+                      { time: "10:00", icon: "⛪", text: "Vaticano · Entrada reservada ✓" },
+                      { time: "13:30", icon: "🍕", text: "Pizzarium Bonci" },
+                      { time: "15:00", icon: "🛍️", text: "Via del Governo Vecchio" },
+                      { time: "18:30", icon: "🍦", text: "Gelato · Fatamorgana" },
+                      { time: "20:30", icon: "🍷", text: "Cena · Tonnarello · Trastevere" },
+                    ],
+                  },
+                ].map((day) => (
+                  <div key={day.dia} style={{ padding: "14px 14px 10px" }}>
+                    <p style={{ fontSize: 11, fontWeight: 800, color: day.color, margin: "0 0 10px", letterSpacing: "0.06em", textTransform: "uppercase" }}>{day.dia}</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {day.items.map((item, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <span style={{ fontSize: 14, flexShrink: 0 }}>{item.icon}</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: day.color, fontVariantNumeric: "tabular-nums", flexShrink: 0, width: 36 }}>{item.time}</span>
+                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>{item.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <div style={{ padding: "10px 14px 14px" }}>
+                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", margin: 0, textAlign: "center" }}>
+                    Toca el plan completo en la app 🗺️
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Dots */}
         <motion.div
