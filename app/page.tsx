@@ -20,14 +20,14 @@ function getWelcomeDate() {
   return `${day} ${date} de ${month} · ${hours}:${minutes}${ampm}`;
 }
 
-const REUNION_DATE = new Date("2026-04-16T00:00:00");
+const REUNION_DATE = new Date("2026-04-24T05:20:00");
 
 const CURSI_MESSAGES = [
-  "Hasta volver a ver a la luz de mis ojos 🌟",
-  "Contando cada segundo hasta tenerte aquí 💫",
-  "Hasta volver a tener al amor de mi vida cerca 🥺",
-  "Cada momento sin ti es demasiado largo ❤️",
-  "Faltan estos momentitos para fundirme contigo 🫂",
+  "Roma os espera — la ciudad del amor 🏛️",
+  "En unos días, juntos bajo el mismo cielo italiano 🇮🇹",
+  "El Coliseo, el Vaticano... y vosotros dos 💗",
+  "Pronto caminaréis de la mano por las calles de Roma 🌹",
+  "La aventura más bonita está a punto de empezar ✨",
 ];
 
 function useCountdown(target: Date) {
@@ -305,7 +305,7 @@ export default function SplashPage() {
 
             {/* Date note */}
             <p style={{ fontSize: 10, color: "#FF2D55", opacity: 0.5, margin: "10px 0 0", letterSpacing: "0.05em" }}>
-              16 de abril · Italia 🇮🇹
+              24 de abril · Roma 🇮🇹
             </p>
           </motion.div>
         )}
