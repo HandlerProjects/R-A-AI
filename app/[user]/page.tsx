@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
 import { NotificationCard } from "@/components/NotificationCard";
+
+const REUNION = new Date("2026-06-04T22:00:00Z"); // 4 junio medianoche CEST
 
 const SHARED_MODULES = [
   { id: "carnet", icon: "💕", title: "Nuestros carnets", description: "Alejandro & Rut · pareja oficial", color: "linear-gradient(135deg, #1C1C1E 0%, #FF2D55 100%)" },
@@ -23,26 +25,41 @@ const DAILY_MODULES = [
   { id: "tarro", icon: "🫙", title: "Tarro de momentos", description: "Guardad lo que os importa", color: "linear-gradient(135deg, #AF52DE 0%, #FF9F0A 100%)" },
 ];
 
-const ALEJANDRO_MODULES = [
-  { id: "rut", icon: "💗", title: "Rut", description: "Sus pequeños detalles" },
+const ALEJANDRO_PERSONAL = [
   { id: "cartas", icon: "💌", title: "Cartas", description: "Escríbele cuando quieras" },
-  { id: "proyectos", icon: "🚀", title: "Proyectos", description: "APISA, Autoescuela, SOLØN..." },
-  { id: "outfits", icon: "👔", title: "Outfits", description: "Armario y combinaciones" },
-  { id: "comidas", icon: "🥗", title: "Comidas", description: "Nutrición y recetas" },
-  { id: "posts", icon: "📱", title: "Posts", description: "Instagram y LinkedIn" },
-  { id: "prompts", icon: "✍️", title: "Prompts", description: "Para todas las IAs" },
   { id: "psicologo", icon: "🧘", title: "Psicólogo", description: "Tu espacio privado" },
 ];
 
-const RUT_MODULES = [
-  { id: "yopuedo", icon: "✨", title: "Yo puedo", description: "Metas diarias y crecimiento" },
-  { id: "cartas", icon: "💌", title: "Cartas", description: "De Alejandro para ti" },
+const RUT_PERSONAL = [
   { id: "tfg", icon: "🎓", title: "TFG", description: "Redacción, APA, análisis" },
   { id: "estudios", icon: "📚", title: "Estudios", description: "Resúmenes y exámenes" },
-  { id: "comidas", icon: "🥗", title: "Comidas", description: "Nutrición y recetas" },
-  { id: "prompts", icon: "✍️", title: "Prompts", description: "Adaptado a tus necesidades" },
   { id: "psicologo", icon: "🧘", title: "Psicólogo", description: "Tu espacio privado" },
 ];
+
+type Countdown = { days: number; hours: number; minutes: number; seconds: number; done: boolean };
+
+function useCountdown(): Countdown {
+  const calc = (): Countdown => {
+    const diff = REUNION.getTime() - Date.now();
+    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, done: true };
+    return {
+      days: Math.floor(diff / 86400000),
+      hours: Math.floor((diff % 86400000) / 3600000),
+      minutes: Math.floor((diff % 3600000) / 60000),
+      seconds: Math.floor((diff % 60000) / 1000),
+      done: false,
+    };
+  };
+  const [cd, setCd] = useState<Countdown>(calc);
+  useEffect(() => {
+    const id = setInterval(() => setCd(calc()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return cd;
+}
+
+type CarinoTipo = "beso" | "abrazo";
+type FloatingEmoji = { id: number; tipo: CarinoTipo; x: number };
 
 export default function HomePage() {
   const params = useParams();
@@ -57,26 +74,46 @@ export default function HomePage() {
   const isAlejandro = userParam === "alejandro";
   const displayName = isAlejandro ? "Alejandro" : "Rut";
   const accentColor = isAlejandro ? "#1C1C1E" : "#FF2D55";
-  const ownModules = isAlejandro ? ALEJANDRO_MODULES : RUT_MODULES;
+  const personalModules = isAlejandro ? ALEJANDRO_PERSONAL : RUT_PERSONAL;
   const greeting = getGreeting();
+  const cd = useCountdown();
 
-  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; done: boolean } | null>(null);
-  useEffect(() => {
-    const target = new Date("2026-04-24T05:20:00").getTime();
-    const tick = () => {
-      const diff = target - Date.now();
-      if (diff <= 0) { setCountdown({ days: 0, hours: 0, minutes: 0, done: true }); return; }
-      setCountdown({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        done: false,
+  // ── Cariño virtual ──────────────────────────────────────────────────────────
+  const [floatingEmojis, setFloatingEmojis] = useState<FloatingEmoji[]>([]);
+  const [cooldowns, setCooldowns] = useState<Record<CarinoTipo, boolean>>({ beso: false, abrazo: false });
+  const [sending, setSending] = useState<CarinoTipo | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const sendCarino = useCallback(async (tipo: CarinoTipo) => {
+    if (cooldowns[tipo] || sending) return;
+    setSending(tipo);
+    setCooldowns((p) => ({ ...p, [tipo]: true }));
+
+    // Floating emojis
+    const count = tipo === "beso" ? 5 : 4;
+    const newEmojis: FloatingEmoji[] = Array.from({ length: count }, (_, i) => ({
+      id: Date.now() + i,
+      tipo,
+      x: 30 + Math.random() * 40,
+    }));
+    setFloatingEmojis((p) => [...p, ...newEmojis]);
+    setTimeout(() => setFloatingEmojis((p) => p.filter((e) => !newEmojis.find((n) => n.id === e.id))), 2000);
+
+    try {
+      await fetch("/api/push/carino", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fromUser: userParam, tipo }),
       });
-    };
-    tick();
-    const id = setInterval(tick, 30000);
-    return () => clearInterval(id);
-  }, []);
+      setToast(tipo === "beso" ? "💋 ¡Beso enviado!" : "🤗 ¡Abrazo enviado!");
+    } catch {
+      setToast("✓ ¡Enviado!");
+    }
+
+    setSending(null);
+    setTimeout(() => setToast(null), 2500);
+    setTimeout(() => setCooldowns((p) => ({ ...p, [tipo]: false })), 8000);
+  }, [cooldowns, sending, userParam]);
 
   return (
     <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg-primary)", overflow: "hidden" }}>
@@ -105,31 +142,29 @@ export default function HomePage() {
             </h1>
           </div>
 
-          {/* Roma countdown mini badge */}
-          {countdown && !countdown.done && (
-            <motion.button
-              onClick={() => router.push(`/${userParam}/roma`)}
+          {/* Mini badge */}
+          {!cd.done && (
+            <motion.div
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, type: "spring", stiffness: 300, damping: 22 }}
-              whileTap={{ scale: 0.93 }}
               style={{
                 display: "flex", flexDirection: "column", alignItems: "center",
-                background: "linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 100%)",
+                background: "linear-gradient(135deg, #1a0a2e 0%, #2d0a1a 100%)",
                 border: "1px solid rgba(255,255,255,0.15)",
                 borderRadius: 14, padding: "7px 11px",
-                boxShadow: "0 4px 16px rgba(0,0,80,0.25)",
-                marginRight: 8, cursor: "pointer",
+                boxShadow: "0 4px 16px rgba(80,0,80,0.25)",
+                marginRight: 8,
               }}
             >
-              <span style={{ fontSize: 14 }}>🇮🇹</span>
+              <span style={{ fontSize: 14 }}>💗</span>
               <span style={{ fontSize: 14, fontWeight: 800, color: "white", lineHeight: 1.1, fontVariantNumeric: "tabular-nums" }}>
-                {countdown.days}d {countdown.hours}h
+                {cd.days}d {cd.hours}h
               </span>
               <span style={{ fontSize: 8, fontWeight: 600, color: "rgba(255,255,255,0.5)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                Roma
+                Reunión
               </span>
-            </motion.button>
+            </motion.div>
           )}
 
           <button
@@ -147,17 +182,11 @@ export default function HomePage() {
               src={isAlejandro ? "/avatar_alejandro.png" : "/avatar_rut.png"}
               alt={displayName}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
             />
-            <span style={{ fontSize: 18, fontWeight: 700, color: "white", display: "none" }}>
-              {displayName[0]}
-            </span>
           </button>
         </div>
 
-        {/* Status */}
         <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, background: "rgba(52,199,89,0.12)", border: "1px solid rgba(52,199,89,0.25)", borderRadius: 20, padding: "4px 10px" }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#34C759" }} />
           <span style={{ fontSize: 11, color: "#34C759", fontWeight: 600 }}>R&A activo</span>
@@ -167,53 +196,149 @@ export default function HomePage() {
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px", paddingBottom: `calc(84px + env(safe-area-inset-bottom))` }}>
 
-        {/* ROMA CARD */}
-        {countdown && !countdown.done && (
-          <motion.button
-            onClick={() => router.push(`/${userParam}/roma`)}
+        {/* ── CONTADOR INTERACTIVO ────────────────────────────────── */}
+        {!cd.done && (
+          <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.4 }}
-            whileTap={{ scale: 0.97 }}
-            style={{ width: "100%", marginBottom: 20, borderRadius: 22, overflow: "hidden", border: "none", cursor: "pointer", padding: 0, background: "none", display: "block" }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            style={{
+              marginBottom: 20, borderRadius: 24, overflow: "visible",
+              background: "linear-gradient(160deg, #0f0015 0%, #1a0030 40%, #0d001a 100%)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "0 8px 32px rgba(100,0,150,0.25)",
+              position: "relative",
+            }}
           >
-            <div style={{ background: "linear-gradient(135deg, #0a0a0f 0%, #101428 50%, #0f1a0a 100%)", padding: "18px 20px", position: "relative", overflow: "hidden", borderRadius: 22, border: "1px solid rgba(255,255,255,0.08)" }}>
-              {/* Decorative circles */}
-              <div style={{ position: "absolute", top: -30, right: -20, width: 130, height: 130, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,122,255,0.2) 0%, transparent 70%)", pointerEvents: "none" }} />
-              <div style={{ position: "absolute", bottom: -20, left: 20, width: 100, height: 100, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,45,85,0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
+            {/* Floating emojis */}
+            <AnimatePresence>
+              {floatingEmojis.map((e) => (
+                <motion.span
+                  key={e.id}
+                  initial={{ opacity: 1, y: 0, scale: 1 }}
+                  animate={{ opacity: 0, y: -80, scale: 1.4 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.4, ease: "easeOut" }}
+                  style={{
+                    position: "absolute", top: "40%", left: `${e.x}%`,
+                    fontSize: 26, zIndex: 50, pointerEvents: "none",
+                    filter: "drop-shadow(0 0 8px rgba(255,100,200,0.6))",
+                  }}
+                >
+                  {e.tipo === "beso" ? "💋" : "🤗"}
+                </motion.span>
+              ))}
+            </AnimatePresence>
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
-                <div style={{ textAlign: "left" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontSize: 22 }}>🇮🇹</span>
-                    <span style={{ fontSize: 18, fontWeight: 800, color: "white", letterSpacing: "-0.3px" }}>Roma · 24–25 Abr</span>
+            {/* Toast */}
+            <AnimatePresence>
+              {toast && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  style={{
+                    position: "absolute", top: -36, left: "50%", transform: "translateX(-50%)",
+                    background: "rgba(255,255,255,0.95)", borderRadius: 20,
+                    padding: "6px 14px", fontSize: 13, fontWeight: 700,
+                    color: "#1C1C1E", whiteSpace: "nowrap",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.2)", zIndex: 60,
+                  }}
+                >
+                  {toast}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div style={{ padding: "20px 20px 18px" }}>
+              {/* Top label */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 14 }}>
+                <span style={{ fontSize: 16 }}>💗</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  Próxima reunión · 4 Jun
+                </span>
+              </div>
+
+              {/* Countdown */}
+              <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
+                {[
+                  { v: cd.days, l: "días" },
+                  { v: cd.hours, l: "horas" },
+                  { v: cd.minutes, l: "min" },
+                  { v: cd.seconds, l: "seg" },
+                ].map(({ v, l }) => (
+                  <div key={l} style={{
+                    flex: 1, background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: 14, padding: "10px 6px", textAlign: "center",
+                  }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: "white", fontVariantNumeric: "tabular-nums", lineHeight: 1, letterSpacing: "-0.5px" }}>
+                      {String(v).padStart(2, "0")}
+                    </div>
+                    <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.07em", marginTop: 3 }}>
+                      {l}
+                    </div>
                   </div>
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", margin: "0 0 12px", fontWeight: 500 }}>
-                    🚌 05:20 · 🏛️ Coliseo · ⛪ Vaticano
-                  </p>
-                  <div style={{ display: "flex", gap: 10 }}>
-                    {[
-                      { v: countdown.days, l: "días" },
-                      { v: countdown.hours, l: "horas" },
-                      { v: countdown.minutes, l: "min" },
-                    ].map(({ v, l }) => (
-                      <div key={l} style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: "white", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{String(v).padStart(2, "0")}</div>
-                        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{l}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                  <div style={{ fontSize: 40 }}>🏛️</div>
-                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Ver plan →</span>
-                </div>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: "rgba(255,255,255,0.07)", marginBottom: 16 }} />
+
+              {/* Cariño label */}
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", textAlign: "center", margin: "0 0 12px", fontWeight: 500 }}>
+                Manda algo para que el tiempo pase más rápido 💫
+              </p>
+
+              {/* Buttons */}
+              <div style={{ display: "flex", gap: 10 }}>
+                <motion.button
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => sendCarino("beso")}
+                  disabled={cooldowns.beso || !!sending}
+                  style={{
+                    flex: 1, padding: "12px 8px",
+                    background: cooldowns.beso
+                      ? "rgba(255,255,255,0.04)"
+                      : "linear-gradient(135deg, rgba(255,45,85,0.25), rgba(255,100,150,0.15))",
+                    border: cooldowns.beso ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(255,45,85,0.35)",
+                    borderRadius: 16, cursor: cooldowns.beso ? "default" : "pointer",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                    transition: "all 0.3s",
+                  }}
+                >
+                  <span style={{ fontSize: 22, filter: cooldowns.beso ? "grayscale(1) opacity(0.4)" : "none" }}>💋</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: cooldowns.beso ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.85)" }}>
+                    {cooldowns.beso ? "Enviado 💗" : "Mandar beso"}
+                  </span>
+                </motion.button>
+
+                <motion.button
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => sendCarino("abrazo")}
+                  disabled={cooldowns.abrazo || !!sending}
+                  style={{
+                    flex: 1, padding: "12px 8px",
+                    background: cooldowns.abrazo
+                      ? "rgba(255,255,255,0.04)"
+                      : "linear-gradient(135deg, rgba(175,82,222,0.25), rgba(100,50,200,0.15))",
+                    border: cooldowns.abrazo ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(175,82,222,0.35)",
+                    borderRadius: 16, cursor: cooldowns.abrazo ? "default" : "pointer",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                    transition: "all 0.3s",
+                  }}
+                >
+                  <span style={{ fontSize: 22, filter: cooldowns.abrazo ? "grayscale(1) opacity(0.4)" : "none" }}>🤗</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: cooldowns.abrazo ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.85)" }}>
+                    {cooldowns.abrazo ? "Enviado 💗" : "Mandar abrazo"}
+                  </span>
+                </motion.button>
               </div>
             </div>
-          </motion.button>
+          </motion.div>
         )}
 
-        {/* DAILY MODULES */}
+        {/* ── CADA DÍA ───────────────────────────────────────────── */}
         <section style={{ marginBottom: 28 }}>
           <SectionLabel text="Cada día" />
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -223,39 +348,27 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* SHARED MODULES */}
+        {/* ── CON RUT ────────────────────────────────────────────── */}
         <section style={{ marginBottom: 28 }}>
-          <SectionLabel text="Con Rut" />
+          <SectionLabel text={isAlejandro ? "Con Rut" : "Con Alejandro"} />
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {SHARED_MODULES.map((mod, i) => (
-              <SharedModuleCard
-                key={mod.id}
-                mod={mod}
-                userParam={userParam}
-                delay={i * 0.05}
-                router={router}
-              />
+              <SharedModuleCard key={mod.id} mod={mod} userParam={userParam} delay={i * 0.05} router={router} />
             ))}
           </div>
         </section>
 
-        {/* OWN MODULES */}
+        {/* ── PERSONAL ───────────────────────────────────────────── */}
         <section style={{ marginBottom: 24 }}>
-          <SectionLabel text="Tus módulos" />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {ownModules.map((mod, i) => (
-              <OwnModuleCard
-                key={mod.id}
-                mod={mod}
-                userParam={userParam}
-                delay={0.1 + i * 0.04}
-                router={router}
-              />
+          <SectionLabel text="Solo tú" />
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {personalModules.map((mod, i) => (
+              <PersonalCard key={mod.id} mod={mod} userParam={userParam} delay={0.1 + i * 0.06} router={router} isAlejandro={isAlejandro} />
             ))}
           </div>
         </section>
 
-        {/* VER PERFIL DEL OTRO */}
+        {/* ── VER AL OTRO ────────────────────────────────────────── */}
         <section>
           <SectionLabel text={isAlejandro ? "Ver a Rut" : "Ver a Alejandro"} />
           <motion.button
@@ -306,10 +419,7 @@ export default function HomePage() {
         </section>
       </div>
 
-      {/* Push notification card */}
-      {!countdown?.done && <NotificationCard userName={userParam} />}
-
-      {/* Bottom Nav */}
+      <NotificationCard userName={userParam} />
       <BottomNav userParam={userParam} router={router} />
     </div>
   );
@@ -354,33 +464,38 @@ function SharedModuleCard({ mod, userParam, delay, router }: any) {
   );
 }
 
-function OwnModuleCard({ mod, userParam, delay, router }: any) {
+function PersonalCard({ mod, userParam, delay, router, isAlejandro }: any) {
+  const isCartas = mod.id === "cartas";
+  const accent = isAlejandro ? "#1C1C1E" : "#FF2D55";
   return (
     <motion.button
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 24, delay }}
-      whileTap={{ scale: 0.96 }}
+      whileTap={{ scale: 0.97 }}
       onClick={() => router.push(`/${userParam}/${mod.id}`)}
       style={{
-        background: "white",
-        border: "1px solid rgba(0,0,0,0.06)",
+        background: isCartas
+          ? `linear-gradient(135deg, ${isAlejandro ? "#1C1C1E" : "#FF2D55"} 0%, ${isAlejandro ? "#3A3A3C" : "#FF6B35"} 100%)`
+          : "white",
+        border: isCartas ? "none" : "1px solid rgba(0,0,0,0.07)",
         borderRadius: 18,
-        padding: "18px 14px",
+        padding: "18px 20px",
         display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-        gap: 8,
+        alignItems: "center",
+        gap: 16,
         cursor: "pointer",
         textAlign: "left",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+        boxShadow: isCartas ? `0 6px 24px ${isAlejandro ? "rgba(0,0,0,0.2)" : "rgba(255,45,85,0.2)"}` : "0 2px 10px rgba(0,0,0,0.06)",
+        width: "100%",
       }}
     >
-      <span style={{ fontSize: 26 }}>{mod.icon}</span>
+      <span style={{ fontSize: 30, flexShrink: 0 }}>{mod.icon}</span>
       <div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.3 }}>{mod.title}</p>
-        <p style={{ fontSize: 12, color: "var(--text-tertiary)", margin: "3px 0 0", lineHeight: 1.4 }}>{mod.description}</p>
+        <p style={{ fontSize: 16, fontWeight: 700, color: isCartas ? "white" : "var(--text-primary)", margin: 0, letterSpacing: "-0.2px" }}>{mod.title}</p>
+        <p style={{ fontSize: 12, color: isCartas ? "rgba(255,255,255,0.65)" : "var(--text-tertiary)", margin: "2px 0 0" }}>{mod.description}</p>
       </div>
+      <div style={{ marginLeft: "auto", color: isCartas ? "rgba(255,255,255,0.5)" : "var(--text-quaternary)", fontSize: 18 }}>›</div>
     </motion.button>
   );
 }

@@ -8,30 +8,30 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
-const REUNION = new Date("2026-04-16T00:00:00Z");
+const REUNION = new Date("2026-06-04T22:00:00Z"); // 4 junio medianoche CEST
 
 function getPayload(daysLeft: number): { title: string; body: string } {
   if (daysLeft === 0) {
     return {
       title: "💗 ¡Por fin juntos!",
-      body: "Hoy es el día — Rut llega a Italia 🇮🇹 Que sea un momento inolvidable ✨",
+      body: "Hoy es el día — volvéis a estar juntos 🥹 Que sea un momento inolvidable ✨",
     };
   }
   if (daysLeft === 1) {
     return {
       title: "💗 ¡Mañana es el día!",
-      body: "Solo queda 1 día para volver a tenerte cerca 🥺🇮🇹",
+      body: "Solo queda 1 día para volver a teneros cerca 🥺 Ya casi…",
     };
   }
 
   const messages = [
-    { title: `💗 ${daysLeft} días`, body: `Quedan ${daysLeft} días para volver a ver a la luz de tus ojos 🌟` },
-    { title: `🩷 ${daysLeft} días`, body: `${daysLeft} días y ya estaréis juntos en Italia 🇮🇹` },
-    { title: `❤️ ${daysLeft} días`, body: `Cada día que pasa es un día menos sin el amor de tu vida 💫` },
-    { title: `💗 ${daysLeft} días para Italia`, body: `${daysLeft} días y vuelves a tenerla cerca 🥺 Aguanta un poco más` },
-    { title: `🌟 ${daysLeft} días`, body: `El 16 de abril os espera una cita en Italia — ${daysLeft} días 💗` },
-    { title: `💗 Cuenta atrás`, body: `${daysLeft} días para fundirte con quien más quieres 🫂🇮🇹` },
-    { title: `🩷 ${daysLeft} días`, body: `Rut llegará en ${daysLeft} días — cada segundo sin ella es demasiado largo 💗` },
+    { title: `💗 ${daysLeft} días`, body: `Quedan ${daysLeft} días para volveros a ver 🌟 Cada uno vale la pena` },
+    { title: `🩷 ${daysLeft} días`, body: `${daysLeft} días y ya estaréis juntos de nuevo 💗 Aguanta un poco más` },
+    { title: `❤️ ${daysLeft} días`, body: `Cada día que pasa es un día menos separados 💫 ${daysLeft} días` },
+    { title: `💗 Cuenta atrás`, body: `${daysLeft} días para fundiros con quien más queréis 🫂` },
+    { title: `🌟 ${daysLeft} días`, body: `Os quedan ${daysLeft} días — y cada abrazo pendiente vale el doble 💗` },
+    { title: `🩷 ${daysLeft} días menos`, body: `Un día menos de distancia, ${daysLeft} por delante 💪 Lo estáis haciendo genial` },
+    { title: `💗 ${daysLeft} días`, body: `La distancia es solo temporal — en ${daysLeft} días desaparece 🥹✨` },
   ];
 
   return messages[daysLeft % messages.length];
@@ -46,11 +46,6 @@ export async function GET(req: NextRequest) {
   const now = new Date();
   const diffMs = REUNION.getTime() - now.getTime();
   const daysLeft = Math.max(0, Math.ceil(diffMs / 86400000));
-
-  // Stop sending after reunion day
-  if (diffMs < -86400000) {
-    return NextResponse.json({ skipped: true, reason: "reunion already passed" });
-  }
 
   const { data: subs, error } = await supabase
     .from("push_subscriptions")
