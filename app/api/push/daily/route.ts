@@ -13,25 +13,72 @@ const REUNION = new Date("2026-06-04T22:00:00Z"); // 4 junio medianoche CEST
 function getPayload(daysLeft: number): { title: string; body: string } {
   if (daysLeft === 0) {
     return {
-      title: "💗 ¡Por fin juntos!",
-      body: "Hoy es el día — volvéis a estar juntos 🥹 Que sea un momento inolvidable ✨",
+      title: "💗 Hoy es el día",
+      body: "Se acabó la distancia. Esta noche volvéis a estar juntos — que sea tan bonito como lo habéis imaginado 🥹✨",
     };
   }
   if (daysLeft === 1) {
     return {
-      title: "💗 ¡Mañana es el día!",
-      body: "Solo queda 1 día para volver a teneros cerca 🥺 Ya casi…",
+      title: "🌙 Mañana, mañana",
+      body: "Un día más y ya está. Mañana esa distancia deja de existir y todo lo que se ha esperado vuelve a estar cerca 💗",
+    };
+  }
+  if (daysLeft <= 7) {
+    return {
+      title: `💗 Solo ${daysLeft} días`,
+      body: `Ya se huele. La recta final siempre se hace eterna — pero en ${daysLeft} días llega el abrazo que lo vale todo 🫂`,
     };
   }
 
   const messages = [
-    { title: `💗 ${daysLeft} días`, body: `Quedan ${daysLeft} días para volveros a ver 🌟 Cada uno vale la pena` },
-    { title: `🩷 ${daysLeft} días`, body: `${daysLeft} días y ya estaréis juntos de nuevo 💗 Aguanta un poco más` },
-    { title: `❤️ ${daysLeft} días`, body: `Cada día que pasa es un día menos separados 💫 ${daysLeft} días` },
-    { title: `💗 Cuenta atrás`, body: `${daysLeft} días para fundiros con quien más queréis 🫂` },
-    { title: `🌟 ${daysLeft} días`, body: `Os quedan ${daysLeft} días — y cada abrazo pendiente vale el doble 💗` },
-    { title: `🩷 ${daysLeft} días menos`, body: `Un día menos de distancia, ${daysLeft} por delante 💪 Lo estáis haciendo genial` },
-    { title: `💗 ${daysLeft} días`, body: `La distancia es solo temporal — en ${daysLeft} días desaparece 🥹✨` },
+    {
+      title: "Te echo de menos 💗",
+      body: `${daysLeft} días. Hoy me ha faltado escuchar tu voz, sentirte cerca. Pero llegará 🥺`,
+    },
+    {
+      title: `${daysLeft} días, amor`,
+      body: "Cierro los ojos y casi te siento. Solo un poco más y esta distancia deja de existir para siempre 💫",
+    },
+    {
+      title: "Aguanta un poco más 🌙",
+      body: `${daysLeft} días quedan. No hay nada que no se cure con un abrazo tuyo de verdad 🫂`,
+    },
+    {
+      title: `${daysLeft} días menos 💗`,
+      body: "Cada buenas noches por pantalla tiene fecha de caducidad. Y se acerca 🥹",
+    },
+    {
+      title: "Lo estáis haciendo genial 💪",
+      body: `La distancia duele porque lo que tenéis es muy real. En ${daysLeft} días desaparece ✨`,
+    },
+    {
+      title: `${daysLeft} días y ya está 🌟`,
+      body: "El próximo abrazo no va a durar nada — va a durar todo. Falta muy poco 💗",
+    },
+    {
+      title: "Hoy también os habéis echado de menos 💗",
+      body: `Y eso es lo más bonito que existe. En ${daysLeft} días, vuelve a estar todo bien 🥺`,
+    },
+    {
+      title: `${daysLeft} días de valentía 🩷`,
+      body: "Sois de esas parejas que demuestran que el amor de verdad no necesita estar al lado para existir 💗",
+    },
+    {
+      title: "Os quedan mensajes de voz 🎙️",
+      body: `${daysLeft} días más de mensajes de voz — después son susurros de verdad 🥹`,
+    },
+    {
+      title: `${daysLeft} días 💗`,
+      body: "Cada foto que os mandáis, cada buenas noches, cada 'te quiero' por pantalla… todo eso tiene recompensa 🌟",
+    },
+    {
+      title: "La distancia no os define 💫",
+      body: `Os define lo que sentís. Y eso no lo separa nada. ${daysLeft} días y volvéis a demostrarlo en persona 💗`,
+    },
+    {
+      title: `Queda poco, de verdad 🥺`,
+      body: `${daysLeft} días. Estáis escribiendo la historia más bonita — y el mejor capítulo llega pronto 💗`,
+    },
   ];
 
   return messages[daysLeft % messages.length];

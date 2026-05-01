@@ -338,27 +338,50 @@ export default function HomePage() {
           </motion.div>
         )}
 
-        {/* ── CADA DÍA ───────────────────────────────────────────── */}
-        <section style={{ marginBottom: 28 }}>
+        {/* ── CADA DÍA ── 2x2 grid ───────────────────────────────── */}
+        <section style={{ marginBottom: 24 }}>
           <SectionLabel text="Cada día" />
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {DAILY_MODULES.map((mod, i) => (
-              <SharedModuleCard key={mod.id} mod={mod} userParam={userParam} delay={i * 0.05} router={router} />
+              <DailyCard key={mod.id} mod={mod} userParam={userParam} delay={i * 0.05} router={router} />
             ))}
           </div>
         </section>
 
-        {/* ── CON RUT ────────────────────────────────────────────── */}
-        <section style={{ marginBottom: 28 }}>
+        {/* ── CON RUT ── Chat hero + grid 2-col ───────────────────── */}
+        <section style={{ marginBottom: 24 }}>
           <SectionLabel text={isAlejandro ? "Con Rut" : "Con Alejandro"} />
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {SHARED_MODULES.map((mod, i) => (
-              <SharedModuleCard key={mod.id} mod={mod} userParam={userParam} delay={i * 0.05} router={router} />
+          {/* Chat hero */}
+          <motion.button
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 24, delay: 0.05 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => router.push(`/${userParam}/chat`)}
+            style={{
+              width: "100%", marginBottom: 10,
+              background: "linear-gradient(135deg, #AF52DE 0%, #FF2D55 100%)",
+              border: "none", borderRadius: 20, padding: "20px 22px",
+              display: "flex", alignItems: "center", gap: 16,
+              cursor: "pointer", textAlign: "left",
+              boxShadow: "0 6px 24px rgba(175,82,222,0.28)",
+            }}
+          >
+            <span style={{ fontSize: 34 }}>💬</span>
+            <div>
+              <p style={{ fontSize: 17, fontWeight: 800, color: "white", margin: 0, letterSpacing: "-0.3px" }}>Chat R&A</p>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", margin: "2px 0 0" }}>IA con contexto de los dos</p>
+            </div>
+            <div style={{ marginLeft: "auto", color: "rgba(255,255,255,0.6)", fontSize: 20 }}>›</div>
+          </motion.button>
+          {/* Rest in 2-col compact grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {SHARED_MODULES.filter(m => m.id !== "chat").map((mod, i) => (
+              <CompactCard key={mod.id} mod={mod} userParam={userParam} delay={0.1 + i * 0.04} router={router} />
             ))}
           </div>
         </section>
 
-        {/* ── PERSONAL ───────────────────────────────────────────── */}
+        {/* ── SOLO TÚ ──────────────────────────────────────────────── */}
         <section style={{ marginBottom: 24 }}>
           <SectionLabel text="Solo tú" />
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -433,40 +456,69 @@ function SectionLabel({ text }: { text: string }) {
   );
 }
 
-function SharedModuleCard({ mod, userParam, delay, router }: any) {
+function DailyCard({ mod, userParam, delay, router }: any) {
   return (
     <motion.button
-      initial={{ opacity: 0, x: -16 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 24, delay }}
-      whileTap={{ scale: 0.97 }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: "spring", stiffness: 320, damping: 26, delay }}
+      whileTap={{ scale: 0.94 }}
+      onClick={() => router.push(`/${userParam}/${mod.id}`)}
+      style={{
+        background: mod.color,
+        border: "none",
+        borderRadius: 20,
+        padding: "18px 14px 16px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 10,
+        cursor: "pointer",
+        textAlign: "left",
+        boxShadow: "0 4px 18px rgba(0,0,0,0.14)",
+        minHeight: 110,
+      }}
+    >
+      <span style={{ fontSize: 28 }}>{mod.icon}</span>
+      <div>
+        <p style={{ fontSize: 14, fontWeight: 700, color: "white", margin: 0, lineHeight: 1.3 }}>{mod.title}</p>
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", margin: "3px 0 0", lineHeight: 1.3 }}>{mod.description}</p>
+      </div>
+    </motion.button>
+  );
+}
+
+function CompactCard({ mod, userParam, delay, router }: any) {
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 26, delay }}
+      whileTap={{ scale: 0.94 }}
       onClick={() => router.push(`/${userParam}/${mod.id}`)}
       style={{
         background: mod.color,
         border: "none",
         borderRadius: 18,
-        padding: "18px 20px",
+        padding: "16px 14px",
         display: "flex",
-        alignItems: "center",
-        gap: 16,
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 8,
         cursor: "pointer",
         textAlign: "left",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+        boxShadow: "0 3px 14px rgba(0,0,0,0.12)",
+        minHeight: 96,
       }}
     >
-      <span style={{ fontSize: 30, flexShrink: 0 }}>{mod.icon}</span>
-      <div>
-        <p style={{ fontSize: 16, fontWeight: 700, color: "white", margin: 0, letterSpacing: "-0.2px" }}>{mod.title}</p>
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", margin: "2px 0 0" }}>{mod.description}</p>
-      </div>
-      <div style={{ marginLeft: "auto", color: "rgba(255,255,255,0.6)", fontSize: 18 }}>›</div>
+      <span style={{ fontSize: 24 }}>{mod.icon}</span>
+      <p style={{ fontSize: 13, fontWeight: 700, color: "white", margin: 0, lineHeight: 1.3 }}>{mod.title}</p>
     </motion.button>
   );
 }
 
 function PersonalCard({ mod, userParam, delay, router, isAlejandro }: any) {
   const isCartas = mod.id === "cartas";
-  const accent = isAlejandro ? "#1C1C1E" : "#FF2D55";
   return (
     <motion.button
       initial={{ opacity: 0, y: 10 }}
@@ -486,14 +538,20 @@ function PersonalCard({ mod, userParam, delay, router, isAlejandro }: any) {
         gap: 16,
         cursor: "pointer",
         textAlign: "left",
-        boxShadow: isCartas ? `0 6px 24px ${isAlejandro ? "rgba(0,0,0,0.2)" : "rgba(255,45,85,0.2)"}` : "0 2px 10px rgba(0,0,0,0.06)",
+        boxShadow: isCartas
+          ? `0 6px 24px ${isAlejandro ? "rgba(0,0,0,0.2)" : "rgba(255,45,85,0.2)"}`
+          : "0 2px 10px rgba(0,0,0,0.06)",
         width: "100%",
       }}
     >
       <span style={{ fontSize: 30, flexShrink: 0 }}>{mod.icon}</span>
       <div>
-        <p style={{ fontSize: 16, fontWeight: 700, color: isCartas ? "white" : "var(--text-primary)", margin: 0, letterSpacing: "-0.2px" }}>{mod.title}</p>
-        <p style={{ fontSize: 12, color: isCartas ? "rgba(255,255,255,0.65)" : "var(--text-tertiary)", margin: "2px 0 0" }}>{mod.description}</p>
+        <p style={{ fontSize: 16, fontWeight: 700, color: isCartas ? "white" : "var(--text-primary)", margin: 0, letterSpacing: "-0.2px" }}>
+          {mod.title}
+        </p>
+        <p style={{ fontSize: 12, color: isCartas ? "rgba(255,255,255,0.65)" : "var(--text-tertiary)", margin: "2px 0 0" }}>
+          {mod.description}
+        </p>
       </div>
       <div style={{ marginLeft: "auto", color: isCartas ? "rgba(255,255,255,0.5)" : "var(--text-quaternary)", fontSize: 18 }}>›</div>
     </motion.button>
