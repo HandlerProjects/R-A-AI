@@ -16,47 +16,61 @@ export async function GET(req: NextRequest) {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // Find cartas that should be delivered today and haven't been notified yet
+  // Cartas pendientes de notificación para cualquier destinatario
   const { data: cartas, error } = await supabase
     .from("cartas")
-    .select("id")
+    .select("id, to_user, from_user")
     .lte("deliver_at", today)
     .eq("notified", false);
 
   if (error || !cartas?.length) return NextResponse.json({ sent: 0 });
 
-  // Get Rut's push subscriptions
-  const { data: subs } = await supabase
-    .from("push_subscriptions")
-    .select("endpoint, p256dh, auth")
-    .eq("user_name", "rut");
+  // Agrupar por destinatario
+  const byRecipient: Record<string, string[]> = {};
+  for (const c of cartas) {
+    if (!byRecipient[c.to_user]) byRecipient[c.to_user] = [];
+    byRecipient[c.to_user].push(c.id);
+  }
 
   let sent = 0;
 
-  if (subs?.length) {
+  for (const [toUser, ids] of Object.entries(byRecipient)) {
+    const fromName = toUser === "rut" ? "Alejandro" : "Rut";
+
+    const { data: subs } = await supabase
+      .from("push_subscriptions")
+      .select("endpoint, p256dh, auth")
+      .eq("user_name", toUser);
+
+    if (!subs?.length) continue;
+
     const payload = JSON.stringify({
-      title: "Alejandro te escribió una carta 💗",
-      body: "¿A qué esperas para leerla?",
-      url: "/rut/cartas",
+      title: `${fromName} te escribió una carta 💗`,
+      body: "¿A qué esperas para leerla? 💌",
+      url: `/${toUser}/cartas`,
       tag: "carta-nueva",
     });
 
     const results = await Promise.allSettled(
-      subs.map((sub) =>
-        webpush.sendNotification(
-          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          payload
-        )
-      )
+      subs.map(async (sub) => {
+        try {
+          await webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            payload
+          );
+        } catch (err: any) {
+          if (err?.statusCode === 410 || err?.statusCode === 404) {
+            await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+          }
+          throw err;
+        }
+      })
     );
-    sent = results.filter((r) => r.status === "fulfilled").length;
-  }
+    sent += results.filter((r) => r.status === "fulfilled").length;
 
-  // Mark all as notified
-  await supabase
-    .from("cartas")
-    .update({ notified: true })
-    .in("id", cartas.map((c) => c.id));
+    // Marcar como notificadas
+    await supabase.from("cartas").update({ notified: true }).in("id", ids);
+  }
 
   return NextResponse.json({ sent, notified: cartas.length });
 }

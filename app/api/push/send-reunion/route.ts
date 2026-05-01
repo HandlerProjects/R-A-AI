@@ -8,7 +8,7 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
-// Called by Vercel Cron on April 16 at 8:00am
+// Called by Vercel Cron on June 4 at 22:00 UTC (midnight CEST)
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
   }
 
   const payload = JSON.stringify({
-    title: "💗 ¡Por fin juntos!",
-    body: "Hoy Rut llega a Italia 🇮🇹 Que sea un día increíble para los dos ✨",
+    title: "💗 ¡Alejandro llega hoy!",
+    body: "Se acabó la distancia — ya estáis en el mismo sitio 🥹 Que sea el abrazo más largo del año ✨",
     url: "/",
     tag: "reunion",
   });

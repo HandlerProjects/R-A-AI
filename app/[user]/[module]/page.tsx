@@ -50,8 +50,9 @@ export default function ModulePage() {
   const isAlejandro = userParam === "alejandro";
   const accentColor = isAlejandro ? "#1C1C1E" : "#FF2D55";
   const isSharedModule = SHARED_MODULES.includes(moduleParam);
-  // Para módulos compartidos: null (sin user_id). Para personales: UUID real del store.
-  const effectiveUserId: string | null = isSharedModule ? null : (userId ?? null);
+  const isUUID = (id: string | null) => !!id && /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(id);
+  // Para módulos compartidos: null. Para personales: solo UUID válido, nunca el nombre string.
+  const effectiveUserId: string | null = isSharedModule ? null : (isUUID(userId ?? null) ? userId! : null);
 
   useEffect(() => {
     if (userParam && userParam !== activeUser) setUser(userParam, userParam);
