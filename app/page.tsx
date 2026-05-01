@@ -20,14 +20,14 @@ function getWelcomeDate() {
   return `${day} ${date} de ${month} · ${hours}:${minutes}${ampm}`;
 }
 
-const REUNION_DATE = new Date("2026-04-24T05:20:00");
+const REUNION_DATE = new Date("2026-06-04T22:00:00Z"); // 4 junio medianoche CEST
 
 const CURSI_MESSAGES = [
-  "Roma os espera — la ciudad del amor 🏛️",
-  "En unos días, juntos bajo el mismo cielo italiano 🇮🇹",
-  "El Coliseo, el Vaticano... y vosotros dos 💗",
-  "Pronto caminaréis de la mano por las calles de Roma 🌹",
-  "La aventura más bonita está a punto de empezar ✨",
+  "Pronto, muy pronto, otro abrazo de verdad 🫂",
+  "La distancia es temporal — lo que sentís es eterno 💗",
+  "Cada día sin verte es un día que nunca se repite 🥺",
+  "El reencuentro más bonito está cada vez más cerca ✨",
+  "En unos días, juntos otra vez donde deberíais estar 💫",
 ];
 
 function useCountdown(target: Date) {
@@ -305,17 +305,8 @@ export default function SplashPage() {
 
             {/* Date note */}
             <p style={{ fontSize: 10, color: "#FF2D55", opacity: 0.5, margin: "10px 0 0", letterSpacing: "0.05em" }}>
-              24 de abril · Roma 🇮🇹
+              4 de junio · ¡Nos vemos! 💗
             </p>
-
-            {/* Botón ver plan completo */}
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={() => router.push("/alejandro/roma")}
-              style={{ marginTop: 14, width: "100%", padding: "10px", borderRadius: 12, border: "1px solid rgba(255,45,85,0.25)", background: "rgba(255,45,85,0.06)", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "#FF2D55", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
-            >
-              Ver el plan de Roma 🗺️
-            </motion.button>
           </motion.div>
         )}
 

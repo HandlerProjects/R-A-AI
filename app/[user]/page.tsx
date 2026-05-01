@@ -528,7 +528,7 @@ function PersonalCard({ mod, userParam, delay, router, isAlejandro }: any) {
       onClick={() => router.push(`/${userParam}/${mod.id}`)}
       style={{
         background: isCartas
-          ? `linear-gradient(135deg, ${isAlejandro ? "#1C1C1E" : "#FF2D55"} 0%, ${isAlejandro ? "#3A3A3C" : "#FF6B35"} 100%)`
+          ? "linear-gradient(135deg, #7A1231 0%, #C42B5B 100%)"
           : "white",
         border: isCartas ? "none" : "1px solid rgba(0,0,0,0.07)",
         borderRadius: 18,
@@ -539,7 +539,7 @@ function PersonalCard({ mod, userParam, delay, router, isAlejandro }: any) {
         cursor: "pointer",
         textAlign: "left",
         boxShadow: isCartas
-          ? `0 6px 24px ${isAlejandro ? "rgba(0,0,0,0.2)" : "rgba(255,45,85,0.2)"}`
+          ? "0 6px 24px rgba(196,43,91,0.28)"
           : "0 2px 10px rgba(0,0,0,0.06)",
         width: "100%",
       }}
