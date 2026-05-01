@@ -86,7 +86,10 @@ export async function loadConversation(
   }
 
   const { data, error } = await query.single();
-  if (error || !data) return null;
+  if (error && error.code !== "PGRST116") {
+    console.error("[memory] loadConversation error:", error.message, { userId, module });
+  }
+  if (!data) return null;
   return data;
 }
 
@@ -101,17 +104,19 @@ export async function saveConversation(
   existingId?: string
 ): Promise<string | null> {
   if (existingId) {
-    await supabase
+    const { error } = await supabase
       .from("conversations")
       .update({ messages, updated_at: new Date().toISOString() })
       .eq("id", existingId);
+    if (error) console.error("[memory] saveConversation update error:", error.message, { userId, module, existingId });
     return existingId;
   } else {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("conversations")
       .insert({ user_id: userId ?? null, module, messages })
       .select("id")
       .single();
+    if (error) console.error("[memory] saveConversation insert error:", error.message, { userId, module });
     return data?.id ?? null;
   }
 }
