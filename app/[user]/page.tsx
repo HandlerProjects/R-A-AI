@@ -31,6 +31,7 @@ const ALEJANDRO_PERSONAL = [
 ];
 
 const RUT_PERSONAL = [
+  { id: "cartas", icon: "💌", title: "Cartas", description: "Escríbele cuando quieras" },
   { id: "tfg", icon: "🎓", title: "TFG", description: "Redacción, APA, análisis" },
   { id: "estudios", icon: "📚", title: "Estudios", description: "Resúmenes y exámenes" },
   { id: "psicologo", icon: "🧘", title: "Psicólogo", description: "Tu espacio privado" },
