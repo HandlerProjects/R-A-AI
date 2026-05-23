@@ -6,245 +6,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
 import { loadHucha, addContribucion, type HuchaStats } from "@/lib/hucha";
 
-// ─── Dachshund sticker illustration ───────────────────────────────────────────
-// Estilo "sticker": contorno oscuro + relleno degradado.
-// El outline unifica todos los elementos y esconde las uniones.
-// ViewBox 360×235. Slot ≈ x=200(55%), y=88(37%).
-function DachshundSVG({ jiggle }: { jiggle: boolean }) {
-  const STROKE = "#4A1A00";
-  const SW = 3;
-  const SW2 = 2.5;
-
-  return (
-    <motion.div
-      animate={jiggle ? { rotate: [-3, 3, -2, 2, 0], y: [0, -6, 0] } : {}}
-      transition={{ duration: 0.46, ease: "easeOut" }}
-      style={{ display: "flex", justifyContent: "center", width: "100%" }}
-    >
-      <svg
-        viewBox="0 0 360 235"
-        overflow="visible"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ width: "100%", maxWidth: 290 }}
-      >
-        <defs>
-          <radialGradient id="dg" cx="38%" cy="28%" r="72%">
-            <stop offset="0%"   stopColor="#D4844A" />
-            <stop offset="60%"  stopColor="#9B4A1E" />
-            <stop offset="100%" stopColor="#5C2008" />
-          </radialGradient>
-          <radialGradient id="dhd" cx="32%" cy="26%" r="68%">
-            <stop offset="0%"   stopColor="#DE8E54" />
-            <stop offset="100%" stopColor="#5C2008" />
-          </radialGradient>
-          <radialGradient id="dear" cx="30%" cy="20%" r="80%">
-            <stop offset="0%"   stopColor="#8B3C12" />
-            <stop offset="100%" stopColor="#3D1004" />
-          </radialGradient>
-          <radialGradient id="dleg" cx="25%" cy="20%" r="80%">
-            <stop offset="0%"   stopColor="#B05A22" />
-            <stop offset="100%" stopColor="#5C2008" />
-          </radialGradient>
-          <radialGradient id="dlegf" cx="25%" cy="20%" r="80%">
-            <stop offset="0%"   stopColor="#7B3210" />
-            <stop offset="100%" stopColor="#3D1004" />
-          </radialGradient>
-        </defs>
-
-        {/* ── OREJA (renderizada primero, queda detrás de la cabeza) ─── */}
-        <path
-          d="M 98 78
-             C 118 68, 132 90, 124 132
-             C 116 166, 94 176, 78 160
-             C 62 144, 66 110, 82 88
-             C 88 80, 94 76, 98 78 Z"
-          fill="url(#dear)"
-          stroke={STROKE}
-          strokeWidth={SW}
-          strokeLinejoin="round"
-        />
-
-        {/* ── CUERPO — path bezier, forma real de salchicha ────────────── */}
-        <path
-          d="M 110 104
-             C 150 87, 240 82, 304 88
-             C 335 92, 348 110, 346 132
-             C 344 154, 330 172, 302 178
-             C 265 184, 165 184, 118 176
-             C 94 170, 83 155, 85 132
-             C 87 113, 97 106, 110 104 Z"
-          fill="url(#dg)"
-          stroke={STROKE}
-          strokeWidth={SW}
-          strokeLinejoin="round"
-        />
-
-        {/* ── CUELLO — rellena la unión sin costura visible ──────────── */}
-        <path
-          d="M 85 132 C 85 112, 98 98, 118 98
-             C 138 98, 150 114, 144 132
-             C 138 148, 120 152, 102 144
-             C 88 136, 84 136, 85 132 Z"
-          fill="url(#dhd)"
-          stroke={STROKE}
-          strokeWidth={SW}
-          strokeLinejoin="round"
-        />
-
-        {/* ── CABEZA ─────────────────────────────────────────────────── */}
-        <ellipse
-          cx="76" cy="114" rx="50" ry="46"
-          fill="url(#dhd)"
-          stroke={STROKE}
-          strokeWidth={SW}
-        />
-
-        {/* ── MORRO ─────────────────────────────────────────────────── */}
-        <path
-          d="M 26 118
-             C 24 102, 38 90, 60 93
-             C 76 96, 84 112, 78 130
-             C 74 142, 58 147, 42 138
-             C 24 128, 24 125, 26 118 Z"
-          fill="url(#dhd)"
-          stroke={STROKE}
-          strokeWidth={SW}
-          strokeLinejoin="round"
-        />
-
-        {/* ── PAPADA / mentón ────────────────────────────────────────── */}
-        <path
-          d="M 28 128 C 26 140, 36 150, 52 150 C 64 150, 74 142, 76 132"
-          stroke={STROKE}
-          strokeWidth={SW2}
-          strokeLinecap="round"
-          fill="none"
-          opacity="0.5"
-        />
-
-        {/* ── RANURA (coin slot) ─────────────────────────────────────── */}
-        <rect x="172" y="84" width="62" height="14" rx="7"
-          fill="#0E0400" stroke={STROKE} strokeWidth="1.5" />
-        <rect x="174" y="86" width="58" height="7" rx="3.5"
-          fill="#060100" />
-        {/* borde reflejo superior */}
-        <rect x="176" y="87" width="26" height="2" rx="1"
-          fill="rgba(255,255,255,0.08)" />
-
-        {/* ── BRILLO CERÁMICA ───────────────────────────────────────── */}
-        <ellipse
-          cx="224" cy="100" rx="76" ry="20"
-          fill="white" opacity="0.09"
-          transform="rotate(-8 224 100)"
-        />
-        <ellipse
-          cx="62" cy="96" rx="26" ry="15"
-          fill="white" opacity="0.16"
-          transform="rotate(-20 62 96)"
-        />
-
-        {/* ── OJO ───────────────────────────────────────────────────── */}
-        <circle cx="58" cy="107" r="13"
-          fill="#0A0100" stroke={STROKE} strokeWidth="1.5" />
-        <circle cx="63" cy="101" r="5.5"
-          fill="white" opacity="0.88" />
-        <circle cx="62" cy="103" r="2.5"
-          fill="white" />
-
-        {/* ── NARIZ ─────────────────────────────────────────────────── */}
-        <ellipse cx="15" cy="122" rx="11" ry="9"
-          fill="#0A0100" stroke={STROKE} strokeWidth="1.5" />
-        <ellipse cx="16" cy="118" rx="4.5" ry="3.5"
-          fill="rgba(255,255,255,0.25)" />
-
-        {/* ══ PATAS ════════════════════════════════════════════════════ */}
-        {/* Orden: far (oscura) primero, near (clara) encima             */}
-
-        {/* Pata trasera lejana */}
-        <path
-          d="M 262 177 C 259 190, 257 207, 259 223
-             C 261 231, 271 234, 279 231
-             C 287 228, 289 219, 286 209
-             C 283 197, 279 184, 272 177 Z"
-          fill="url(#dlegf)"
-          stroke={STROKE}
-          strokeWidth={SW2}
-          strokeLinejoin="round"
-        />
-
-        {/* Pata trasera cercana */}
-        <path
-          d="M 240 179 C 237 192, 235 209, 237 225
-             C 239 233, 249 236, 257 233
-             C 265 230, 267 221, 264 211
-             C 261 199, 257 186, 250 179 Z"
-          fill="url(#dleg)"
-          stroke={STROKE}
-          strokeWidth={SW}
-          strokeLinejoin="round"
-        />
-        <path d="M 243 184 C 242 194, 241 207, 243 219"
-          stroke="rgba(255,255,255,0.13)" strokeWidth="5" strokeLinecap="round" fill="none" />
-
-        {/* Pata delantera lejana */}
-        <path
-          d="M 126 174 C 123 187, 121 204, 123 220
-             C 125 228, 135 231, 143 228
-             C 151 225, 153 216, 150 206
-             C 147 194, 143 181, 136 174 Z"
-          fill="url(#dlegf)"
-          stroke={STROKE}
-          strokeWidth={SW2}
-          strokeLinejoin="round"
-        />
-
-        {/* Pata delantera cercana */}
-        <path
-          d="M 104 176 C 101 189, 99 206, 101 222
-             C 103 230, 113 233, 121 230
-             C 129 227, 131 218, 128 208
-             C 125 196, 121 183, 114 176 Z"
-          fill="url(#dleg)"
-          stroke={STROKE}
-          strokeWidth={SW}
-          strokeLinejoin="round"
-        />
-        <path d="M 107 181 C 106 191, 105 204, 107 216"
-          stroke="rgba(255,255,255,0.13)" strokeWidth="5" strokeLinecap="round" fill="none" />
-
-        {/* ── COLA (curva hacia arriba, detrás del cuerpo) ───────────── */}
-        <path
-          d="M 340 150 C 360 138, 370 114, 358 96
-             C 347 80, 328 82, 330 96
-             C 338 89, 352 93, 355 108
-             C 358 122, 344 140, 336 152 Z"
-          fill="url(#dg)"
-          stroke={STROKE}
-          strokeWidth={SW}
-          strokeLinejoin="round"
-        />
-      </svg>
-    </motion.div>
-  );
-}
-
-// ─── Moneda que cae en la ranura ──────────────────────────────────────────────
-// Slot en viewBox 360×235: centro x=203(56%), y=91(39%)
+// ─── Moneda cayendo ────────────────────────────────────────────────────────────
+// La ranura de la foto está aprox. en x:52%, y:30% de la imagen
 function CoinDrop({ id, onDone }: { id: number; onDone: (id: number) => void }) {
   return (
     <motion.div
       key={id}
-      initial={{ y: -65, scale: 1.2, opacity: 1, rotate: -18 }}
-      animate={{ y: 0,   scale: 0.05, opacity: 0, rotate: 18 }}
-      transition={{ duration: 0.5, ease: [0.55, 0.05, 0.9, 0.5] }}
+      initial={{ y: -70, scale: 1.3, opacity: 1, rotate: -20 }}
+      animate={{ y: 0,   scale: 0.05, opacity: 0, rotate: 20 }}
+      transition={{ duration: 0.52, ease: [0.55, 0.05, 0.9, 0.5] }}
       onAnimationComplete={() => onDone(id)}
       style={{
         position: "absolute",
-        top: "39%",
-        left: "56%",
+        top: "30%",
+        left: "52%",
         transform: "translateX(-50%)",
-        fontSize: 32,
+        fontSize: 34,
         pointerEvents: "none",
         zIndex: 30,
         lineHeight: 1,
@@ -321,6 +98,14 @@ export default function HuchaPage() {
   return (
     <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg-primary)", overflow: "hidden" }}>
 
+      {/* Keyframes para la flotación continua */}
+      <style>{`
+        @keyframes huchaFloat {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-9px); }
+        }
+      `}</style>
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
@@ -352,10 +137,10 @@ export default function HuchaPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
           style={{
-            background: "linear-gradient(160deg, #FFF8F4 0%, #FFF3EE 100%)",
+            background: "linear-gradient(160deg, #FFF9F5 0%, #FFF2E8 100%)",
             borderRadius: 28, padding: "28px 20px 24px",
-            marginBottom: 14, boxShadow: "0 6px 28px rgba(150,60,10,0.12)",
-            border: "1px solid rgba(200,100,40,0.12)", position: "relative", overflow: "hidden",
+            marginBottom: 14, boxShadow: "0 6px 32px rgba(120,50,10,0.13)",
+            border: "1px solid rgba(180,90,30,0.1)", position: "relative", overflow: "hidden",
           }}
         >
           {/* Toast */}
@@ -375,9 +160,37 @@ export default function HuchaPage() {
             )}
           </AnimatePresence>
 
-          {/* SVG + monedas */}
-          <div style={{ position: "relative" }}>
-            <DachshundSVG jiggle={jiggle} />
+          {/* Foto del perro + monedas */}
+          <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+            {/* Float wrapper (CSS) + jiggle wrapper (Framer Motion) */}
+            <div style={{ animation: "huchaFloat 3s ease-in-out infinite" }}>
+              <motion.div
+                animate={jiggle
+                  ? { rotate: [-5, 5, -4, 4, -2, 2, 0] }
+                  : { rotate: 0 }
+                }
+                transition={{ duration: 0.48 }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/hucha-dog.png"
+                  alt="Hucha perro salchicha"
+                  style={{
+                    width: "100%",
+                    maxWidth: 240,
+                    height: "auto",
+                    objectFit: "contain",
+                    display: "block",
+                    filter: jiggle
+                      ? "drop-shadow(0 0 18px rgba(210,130,50,0.65)) drop-shadow(0 10px 28px rgba(0,0,0,0.22))"
+                      : "drop-shadow(0 10px 28px rgba(0,0,0,0.18))",
+                    transition: "filter 0.3s ease",
+                  }}
+                />
+              </motion.div>
+            </div>
+
+            {/* Monedas cayendo — posicionadas sobre la foto */}
             <AnimatePresence>
               {coins.map((id) => (
                 <CoinDrop key={id} id={id} onDone={removeCoin} />
@@ -386,17 +199,20 @@ export default function HuchaPage() {
           </div>
 
           {/* Contador */}
-          <div style={{ textAlign: "center", marginTop: 12 }}>
+          <div style={{ textAlign: "center", marginTop: 16 }}>
             <motion.p
               key={stats.total}
               initial={{ scale: 1.35, color: "#34C759" }}
               animate={{ scale: 1, color: "#3D1204" }}
               transition={{ type: "spring", stiffness: 450, damping: 20 }}
-              style={{ fontSize: 62, fontWeight: 900, margin: 0, letterSpacing: "-3px", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}
+              style={{
+                fontSize: 62, fontWeight: 900, margin: 0,
+                letterSpacing: "-3px", fontVariantNumeric: "tabular-nums", lineHeight: 1,
+              }}
             >
               {loading ? "—" : `€${stats.total}`}
             </motion.p>
-            <p style={{ fontSize: 13, color: "rgba(60,18,4,0.45)", margin: "5px 0 20px", fontWeight: 500 }}>
+            <p style={{ fontSize: 13, color: "rgba(60,18,4,0.42)", margin: "5px 0 20px", fontWeight: 500 }}>
               ahorrados juntos
             </p>
 
@@ -427,7 +243,11 @@ export default function HuchaPage() {
         {/* Botones */}
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
-          style={{ background: "white", borderRadius: 22, padding: "20px 16px", marginBottom: 14, boxShadow: "0 2px 14px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.05)" }}
+          style={{
+            background: "white", borderRadius: 22, padding: "20px 16px",
+            marginBottom: 14, boxShadow: "0 2px 14px rgba(0,0,0,0.06)",
+            border: "1px solid rgba(0,0,0,0.05)",
+          }}
         >
           <p style={{ fontSize: 12, fontWeight: 700, color: "rgba(0,0,0,0.3)", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px", textAlign: "center" }}>
             ¿Alguien negó un piropo?
