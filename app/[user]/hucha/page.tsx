@@ -6,102 +6,88 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
 import { loadHucha, addContribucion, type HuchaStats } from "@/lib/hucha";
 
-// ─── Hucha cerámica redonda ────────────────────────────────────────────────────
-// Forma clásica de hucha: cuerpo oval, ranura arriba, tapón abajo.
+// ─── Hucha cerámica SVG ────────────────────────────────────────────────────────
 function Hucha({ jiggle }: { jiggle: boolean }) {
-  const CER = "radial-gradient(ellipse at 30% 22%, #FFF5E4 0%, #EDD8A8 32%, #C89850 66%, #9A6E28 100%)";
-  const SHN = "inset 16px 4px 28px rgba(255,255,255,0.5), inset -14px 0 24px rgba(80,40,0,0.12), inset 0 -14px 22px rgba(80,40,0,0.1)";
-
   return (
     <motion.div
       animate={jiggle ? { rotate: [-4, 4, -3, 3, -1.5, 1.5, 0] } : {}}
       transition={{ duration: 0.46 }}
-      style={{ display: "flex", justifyContent: "center", filter: "drop-shadow(0 20px 40px rgba(100,50,0,0.24))" }}
+      style={{ display: "flex", justifyContent: "center" }}
     >
-      <div style={{ position: "relative", width: 170, height: 186 }}>
+      <svg viewBox="0 0 210 205" width="210" height="205" style={{ overflow: "visible" }}>
+        <defs>
+          {/* Cerámica principal: luz arriba-izquierda */}
+          <radialGradient id="hCer" cx="30%" cy="24%" r="70%">
+            <stop offset="0%"   stopColor="#FFF8E8"/>
+            <stop offset="28%"  stopColor="#EDD5A0"/>
+            <stop offset="65%"  stopColor="#C89850"/>
+            <stop offset="100%" stopColor="#8A5E20"/>
+          </radialGradient>
+          {/* Lado oscuro (patas traseras, interior oreja) */}
+          <radialGradient id="hDrk" cx="30%" cy="24%" r="70%">
+            <stop offset="0%"   stopColor="#BF9040"/>
+            <stop offset="100%" stopColor="#6A4010"/>
+          </radialGradient>
+          {/* Hocico */}
+          <radialGradient id="hSnout" cx="38%" cy="32%" r="70%">
+            <stop offset="0%"   stopColor="#DEC078"/>
+            <stop offset="100%" stopColor="#9A6828"/>
+          </radialGradient>
+          {/* Sombra suave */}
+          <filter id="hShadow" x="-25%" y="-15%" width="150%" height="160%">
+            <feDropShadow dx="0" dy="10" stdDeviation="13"
+              floodColor="#5A3010" floodOpacity="0.26"/>
+          </filter>
+        </defs>
 
-        {/* Ranura de monedas (en la cima del cuerpo) */}
-        <div style={{
-          position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)",
-          width: 42, height: 6,
-          background: "#1A0800",
-          borderRadius: 4,
-          boxShadow: "inset 0 3px 8px rgba(0,0,0,0.95), 0 1px 0 rgba(220,160,50,0.2)",
-          zIndex: 6,
-        }} />
+        {/* Cola rizada (izquierda) */}
+        <path d="M 30 100 Q 5 74 13 52 Q 21 30 13 16"
+          stroke="#C89850" strokeWidth="9" fill="none" strokeLinecap="round"/>
+        <path d="M 30 100 Q 5 74 13 52 Q 21 30 13 16"
+          stroke="rgba(255,238,190,0.45)" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
 
-        {/* Cúpula superior */}
-        <div style={{
-          position: "absolute", top: 4, left: "50%", transform: "translateX(-50%)",
-          width: 130, height: 60,
-          background: CER,
-          borderRadius: "50% 50% 0 0",
-          boxShadow: SHN,
-          zIndex: 3,
-        }}>
-          {/* Brillo cúpula */}
-          <div style={{
-            position: "absolute", left: 20, top: 12,
-            width: 26, height: 28,
-            background: "linear-gradient(140deg, rgba(255,255,255,0.55) 0%, transparent 100%)",
-            borderRadius: "50%",
-          }} />
-        </div>
+        {/* Patas traseras (más oscuras, detrás del cuerpo) */}
+        <rect x="128" y="158" width="21" height="35" rx="10.5" fill="url(#hDrk)"/>
+        <rect x="55"  y="158" width="21" height="35" rx="10.5" fill="url(#hDrk)"/>
 
-        {/* Cuerpo principal (oval, más ancho que la cúpula) */}
-        <div style={{
-          position: "absolute", top: 50, left: "50%", transform: "translateX(-50%)",
-          width: 164, height: 110,
-          background: CER,
-          borderRadius: "50% 50% 44% 44% / 30% 30% 44% 44%",
-          boxShadow: SHN,
-          zIndex: 2,
-          overflow: "hidden",
-        }}>
-          {/* Brillo izquierdo principal */}
-          <div style={{
-            position: "absolute", left: 18, top: 10,
-            width: 24, height: 72,
-            background: "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.06) 65%, transparent 100%)",
-            borderRadius: 16, transform: "rotate(-8deg)",
-          }} />
-          {/* Brillo derecho sutil */}
-          <div style={{
-            position: "absolute", right: 22, top: 18,
-            width: 10, height: 42,
-            background: "rgba(255,255,255,0.14)",
-            borderRadius: 6,
-          }} />
-        </div>
+        {/* Cuerpo principal */}
+        <ellipse cx="97" cy="102" rx="76" ry="67" fill="url(#hCer)" filter="url(#hShadow)"/>
 
-        {/* Base plana */}
-        <div style={{
-          position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)",
-          width: 148, height: 14,
-          background: "linear-gradient(180deg, #9A6E28 0%, #6C4A10 100%)",
-          borderRadius: "0 0 50% 50% / 0 0 90% 90%",
-          zIndex: 2,
-        }} />
+        {/* Brillo ceramica en el cuerpo */}
+        <ellipse cx="67" cy="68" rx="22" ry="14"
+          fill="rgba(255,255,255,0.38)" transform="rotate(-26 67 68)"/>
+        {/* Segundo brillo sutil */}
+        <ellipse cx="120" cy="54" rx="8" ry="5"
+          fill="rgba(255,255,255,0.16)" transform="rotate(-10 120 54)"/>
 
-        {/* Tapón de vaciado (círculo pequeño en la base) */}
-        <div style={{
-          position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)",
-          width: 28, height: 14,
-          background: "linear-gradient(180deg, #7A5010 0%, #4A2E04 100%)",
-          borderRadius: "0 0 18px 18px",
-          boxShadow: "inset 0 2px 5px rgba(0,0,0,0.4)",
-          zIndex: 3,
-        }} />
+        {/* Ranura de monedas */}
+        <rect x="68" y="37" width="42" height="7" rx="3.5" fill="#180800"/>
+        <rect x="67" y="36" width="44" height="9" rx="4.5"
+          fill="none" stroke="rgba(100,50,0,0.22)" strokeWidth="1"/>
+
+        {/* Cabeza */}
+        <circle cx="164" cy="85" r="31" fill="url(#hCer)"/>
+
+        {/* Oreja */}
+        <ellipse cx="173" cy="57" rx="10" ry="15" fill="url(#hDrk)" transform="rotate(18 173 57)"/>
+        <ellipse cx="173" cy="57" rx="6"  ry="10" fill="#D0A04A"   transform="rotate(18 173 57)"/>
+
+        {/* Ojo */}
+        <circle cx="173" cy="81" r="5.5" fill="#180800"/>
+        <circle cx="175" cy="79" r="2.2" fill="rgba(255,255,255,0.88)"/>
+
+        {/* Hocico */}
+        <ellipse cx="189" cy="97" rx="15.5" ry="12" fill="url(#hSnout)"/>
+        <circle cx="184" cy="97" r="3.5" fill="rgba(80,40,0,0.5)"/>
+        <circle cx="193" cy="97" r="3.5" fill="rgba(80,40,0,0.5)"/>
+
+        {/* Patas delanteras (más claras, delante) */}
+        <rect x="115" y="160" width="21" height="33" rx="10.5" fill="url(#hCer)"/>
+        <rect x="68"  y="160" width="21" height="33" rx="10.5" fill="url(#hCer)"/>
 
         {/* Sombra suelo */}
-        <div style={{
-          position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)",
-          width: 130, height: 10,
-          background: "radial-gradient(ellipse, rgba(100,50,0,0.2) 0%, transparent 80%)",
-          borderRadius: "50%",
-          zIndex: 1,
-        }} />
-      </div>
+        <ellipse cx="97" cy="200" rx="72" ry="6" fill="rgba(100,50,0,0.1)"/>
+      </svg>
     </motion.div>
   );
 }
@@ -117,8 +103,8 @@ function CoinDrop({ id, onDone }: { id: number; onDone: (id: number) => void }) 
       onAnimationComplete={() => onDone(id)}
       style={{
         position: "absolute",
-        top: "10%",
-        left: "50%",
+        top: "18%",
+        left: "46%",
         transform: "translateX(-50%)",
         fontSize: 32,
         pointerEvents: "none",
@@ -220,7 +206,7 @@ export default function HuchaPage() {
             </svg>
           </button>
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.3px" }}>Hucha 🏺</h1>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.3px" }}>Hucha 🐷</h1>
             <p style={{ fontSize: 11, color: "var(--text-tertiary)", margin: 0 }}>Cada piropo negado, 1€</p>
           </div>
         </div>
@@ -368,7 +354,7 @@ export default function HuchaPage() {
         {!loading && stats.entries.length === 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
             style={{ textAlign: "center", paddingTop: 20 }}>
-            <p style={{ fontSize: 14, color: "var(--text-quaternary)", fontWeight: 500 }}>La hucha está vacía 🏺</p>
+            <p style={{ fontSize: 14, color: "var(--text-quaternary)", fontWeight: 500 }}>La hucha está vacía 🐷</p>
             <p style={{ fontSize: 12, color: "var(--text-quaternary)", opacity: 0.7 }}>Negad un piropo y ponéis el primer euro</p>
           </motion.div>
         )}
