@@ -6,124 +6,226 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
 import { loadHucha, addContribucion, type HuchaStats } from "@/lib/hucha";
 
-// ─── SVG Perro Salchicha Cerámica ─────────────────────────────────────────────
+// ─── Perro salchicha hucha ─────────────────────────────────────────────────────
+// Construido con paths bezier reales, no con elipses sueltas.
+// ViewBox 400×270. Slot en x≈205 (52%), y≈90 (33%).
 function DachshundSVG({ jiggle }: { jiggle: boolean }) {
   return (
     <motion.div
-      animate={jiggle ? { rotate: [-4, 4, -3, 3, -1, 0], y: [0, -5, 0] } : {}}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      animate={jiggle ? { rotate: [-3, 3, -2, 2, 0], y: [0, -6, 0] } : {}}
+      transition={{ duration: 0.48, ease: "easeOut" }}
       style={{ display: "flex", justifyContent: "center", width: "100%" }}
     >
       <svg
-        viewBox="0 0 300 195"
+        viewBox="0 0 400 270"
+        overflow="visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ width: "100%", maxWidth: 260 }}
+        style={{ width: "100%", maxWidth: 300 }}
       >
         <defs>
-          <linearGradient id="hbrown" x1="0.2" y1="0" x2="0.8" y2="1">
-            <stop offset="0%" stopColor="#9B4E1F" />
-            <stop offset="100%" stopColor="#4A1E06" />
-          </linearGradient>
-          <linearGradient id="hbrown2" x1="0" y1="0" x2="0.4" y2="1">
-            <stop offset="0%" stopColor="#8B4419" />
-            <stop offset="100%" stopColor="#4A1E06" />
-          </linearGradient>
-          <radialGradient id="bodyshine" cx="40%" cy="30%" r="60%">
-            <stop offset="0%" stopColor="#B5622A" />
-            <stop offset="100%" stopColor="#4A1E06" />
+          {/* Gradiente principal del cuerpo: chocolate cálido */}
+          <radialGradient id="hbody" cx="38%" cy="28%" r="72%">
+            <stop offset="0%"   stopColor="#C46830" />
+            <stop offset="55%"  stopColor="#7B3210" />
+            <stop offset="100%" stopColor="#3D1204" />
           </radialGradient>
-          <radialGradient id="headshine" cx="35%" cy="30%" r="65%">
-            <stop offset="0%" stopColor="#A85824" />
-            <stop offset="100%" stopColor="#4A1E06" />
+          {/* Gradiente cabeza (más claro en frente) */}
+          <radialGradient id="hhead" cx="35%" cy="30%" r="68%">
+            <stop offset="0%"   stopColor="#CE7238" />
+            <stop offset="100%" stopColor="#3D1204" />
           </radialGradient>
+          {/* Patas: más oscuras, sombreadas */}
+          <linearGradient id="hleg" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="#6B2C0A" />
+            <stop offset="100%" stopColor="#421506" />
+          </linearGradient>
+          {/* Sombra para patas traseras (más lejos) */}
+          <linearGradient id="hlegfar" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="#521F07" />
+            <stop offset="100%" stopColor="#311004" />
+          </linearGradient>
         </defs>
 
-        {/* Oreja (detrás de la cabeza, larga y caída) */}
-        <ellipse cx="83" cy="126" rx="19" ry="38"
-          fill="url(#hbrown2)" transform="rotate(-10 83 126)" />
+        {/* ── OREJA larga y caída (detrás de la cabeza) ─────────────── */}
+        <path
+          d="M 88 105
+             C 106 98, 116 118, 112 152
+             C 108 178, 88 192, 74 178
+             C 60 164, 64 132, 88 105 Z"
+          fill="#3D1204"
+          opacity="0.88"
+        />
 
-        {/* Cuerpo — grande y redondo */}
-        <ellipse cx="178" cy="126" rx="100" ry="55" fill="url(#bodyshine)" />
+        {/* ── CUERPO principal — path bezier cerrado ─────────────────── */}
+        {/*   Hombro → lomo → grupa → vientre → pecho → cierre          */}
+        <path
+          d="M 122 112
+             C 162 90, 248 82, 318 86
+             C 356 88, 380 106, 384 134
+             C 388 158, 372 182, 346 194
+             C 322 204, 274 208, 216 207
+             C 158 206, 116 196, 96 178
+             C 78 162, 80 140, 94 122
+             C 102 114, 114 112, 122 112 Z"
+          fill="url(#hbody)"
+        />
 
-        {/* Unión cuello-cuerpo */}
-        <ellipse cx="107" cy="112" rx="35" ry="32" fill="url(#headshine)" />
+        {/* ── CUELLO — une cabeza y cuerpo sin costura ───────────────── */}
+        <path
+          d="M 94 122
+             C 94 106, 108 95, 128 96
+             C 148 97, 158 112, 152 128
+             C 146 144, 126 148, 108 140
+             C 95 133, 93 128, 94 122 Z"
+          fill="url(#hhead)"
+        />
 
-        {/* Cabeza — grande y redonda */}
-        <ellipse cx="66" cy="90" rx="50" ry="44" fill="url(#headshine)" />
+        {/* ── CABEZA — óvalo grande, bien proporcioando ──────────────── */}
+        <ellipse cx="80" cy="115" rx="60" ry="53" fill="url(#hhead)" />
 
-        {/* Hocico superior */}
-        <ellipse cx="24" cy="100" rx="26" ry="18" fill="url(#hbrown2)" />
+        {/* ── MORRO superior ─────────────────────────────────────────── */}
+        <path
+          d="M 28 114
+             C 26 100, 38 88, 58 91
+             C 74 93, 82 107, 76 124
+             C 72 136, 56 141, 40 133
+             C 24 125, 24 120, 28 114 Z"
+          fill="url(#hbody)"
+        />
 
-        {/* Mandíbula inferior */}
-        <ellipse cx="22" cy="113" rx="21" ry="12" fill="#3D1804" opacity="0.8" />
+        {/* ── MANDÍBULA inferior (papada) ────────────────────────────── */}
+        <path
+          d="M 30 124 C 28 134, 36 144, 52 146 C 62 148, 72 142, 74 132
+             C 64 137, 46 136, 35 128 Z"
+          fill="#3D1204"
+          opacity="0.55"
+        />
 
-        {/* ── Brillo cerámica (cuerpo) */}
-        <ellipse cx="148" cy="92" rx="65" ry="24"
-          fill="white" opacity="0.13" transform="rotate(-14 148 92)" />
+        {/* ── BRILLO CERÁMICO cuerpo ──────────────────────────────────── */}
+        <ellipse
+          cx="230" cy="102" rx="88" ry="24"
+          fill="white" opacity="0.11"
+          transform="rotate(-8 230 102)"
+        />
 
-        {/* ── Brillo cerámica (cabeza) */}
-        <ellipse cx="52" cy="72" rx="24" ry="15"
-          fill="white" opacity="0.22" transform="rotate(-22 52 72)" />
+        {/* ── BRILLO CERÁMICO cabeza ──────────────────────────────────── */}
+        <ellipse
+          cx="65" cy="96" rx="28" ry="16"
+          fill="white" opacity="0.2"
+          transform="rotate(-22 65 96)"
+        />
 
-        {/* Ranura monedas */}
-        <rect x="143" y="74" width="54" height="13" rx="6.5" fill="rgba(0,0,0,0.7)" />
-        <rect x="145" y="76" width="50" height="5" rx="2.5" fill="rgba(0,0,0,0.35)" />
-        {/* Brillo ranura */}
-        <rect x="147" y="77" width="22" height="2" rx="1" fill="rgba(255,255,255,0.08)" />
+        {/* ── RANURA DE MONEDAS ───────────────────────────────────────── */}
+        {/* Caja exterior oscura */}
+        <rect x="182" y="82" width="68" height="16" rx="8" fill="#0E0300" opacity="0.9" />
+        {/* Interior más oscuro */}
+        <rect x="184" y="84" width="64" height="8" rx="4" fill="#060100" />
+        {/* Pequeño brillo en el borde superior del slot */}
+        <rect x="186" y="85" width="30" height="2.5" rx="1.25" fill="rgba(255,255,255,0.09)" />
 
-        {/* Ojo */}
-        <circle cx="48" cy="83" r="10" fill="#0F0400" />
-        <circle cx="51" cy="79" r="4" fill="white" opacity="0.72" />
-        <circle cx="50" cy="81" r="1.5" fill="white" opacity="0.9" />
+        {/* ── OJO ────────────────────────────────────────────────────── */}
+        <circle cx="58" cy="107" r="13" fill="#0A0200" />
+        {/* Reflejo principal */}
+        <circle cx="63" cy="102" r="5.5" fill="white" opacity="0.85" />
+        {/* Reflejo pequeño secundario */}
+        <circle cx="62" cy="103" r="2.5" fill="white" />
 
-        {/* Nariz */}
-        <ellipse cx="5" cy="104" rx="8" ry="7" fill="#0F0400" />
-        <ellipse cx="6" cy="101" rx="3.5" ry="2.5" fill="white" opacity="0.3" />
+        {/* ── NARIZ ──────────────────────────────────────────────────── */}
+        <ellipse cx="17" cy="118" rx="10" ry="9" fill="#0A0200" />
+        <ellipse cx="18" cy="113" rx="4" ry="3" fill="rgba(255,255,255,0.28)" />
 
-        {/* Patas delanteras — cortas y redondeadas */}
-        <rect x="113" y="172" width="26" height="21" rx="13" fill="url(#hbrown2)" />
-        <rect x="145" y="172" width="26" height="21" rx="13" fill="url(#hbrown2)" />
+        {/* ══════════════════════════════════════════════════════════════ */}
+        {/* PATAS — paths con forma real de pata, unidas al cuerpo       */}
+        {/* ══════════════════════════════════════════════════════════════ */}
 
-        {/* Patas traseras */}
-        <rect x="226" y="172" width="26" height="21" rx="13" fill="url(#hbrown2)" />
-        <rect x="255" y="172" width="24" height="21" rx="12" fill="url(#hbrown2)" />
+        {/* Pata trasera lejana (a la derecha, más oscura) */}
+        <path
+          d="M 310 200
+             C 308 212, 306 228, 308 244
+             C 310 253, 320 256, 328 252
+             C 336 248, 337 240, 334 230
+             C 331 218, 328 206, 322 200 Z"
+          fill="url(#hlegfar)"
+          opacity="0.82"
+        />
 
-        {/* Brillos patas */}
-        <rect x="115" y="174" width="10" height="9" rx="4.5" fill="white" opacity="0.13" />
-        <rect x="147" y="174" width="10" height="9" rx="4.5" fill="white" opacity="0.13" />
-        <rect x="228" y="174" width="10" height="9" rx="4.5" fill="white" opacity="0.13" />
-        <rect x="257" y="174" width="9" height="9" rx="4.5" fill="white" opacity="0.13" />
+        {/* Pata trasera cercana */}
+        <path
+          d="M 282 202
+             C 280 214, 278 230, 280 246
+             C 282 255, 292 258, 300 254
+             C 308 250, 309 242, 307 232
+             C 304 220, 300 208, 292 202 Z"
+          fill="url(#hleg)"
+        />
+        <path
+          d="M 285 207 C 284 216, 283 228, 285 240"
+          stroke="rgba(255,255,255,0.11)" strokeWidth="5" strokeLinecap="round" fill="none"
+        />
 
-        {/* Cola — curva hacia arriba */}
-        <path d="M 272 126 C 292 116 302 94 290 78 C 280 65 264 72 270 84"
-          stroke="url(#hbrown)" strokeWidth="17" strokeLinecap="round" fill="none" />
-        {/* Brillo cola */}
-        <path d="M 274 122 C 290 113 298 94 288 80"
-          stroke="white" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.12" />
+        {/* Pata delantera lejana */}
+        <path
+          d="M 152 198
+             C 150 210, 148 226, 150 242
+             C 152 251, 162 254, 170 250
+             C 178 246, 179 238, 176 228
+             C 173 216, 170 204, 162 198 Z"
+          fill="url(#hlegfar)"
+          opacity="0.82"
+        />
+
+        {/* Pata delantera cercana */}
+        <path
+          d="M 124 200
+             C 122 212, 120 228, 122 244
+             C 124 253, 134 256, 142 252
+             C 150 248, 151 240, 149 230
+             C 146 218, 142 206, 134 200 Z"
+          fill="url(#hleg)"
+        />
+        <path
+          d="M 127 205 C 126 214, 125 226, 127 238"
+          stroke="rgba(255,255,255,0.11)" strokeWidth="5" strokeLinecap="round" fill="none"
+        />
+
+        {/* ── COLA — curva hacia arriba ───────────────────────────────── */}
+        <path
+          d="M 378 155
+             C 396 142, 406 118, 394 98
+             C 384 80, 362 80, 360 96
+             C 370 88, 386 92, 390 106
+             C 394 120, 380 138, 372 150 Z"
+          fill="url(#hbody)"
+        />
+        <path
+          d="M 380 151 C 394 138, 402 118, 392 100"
+          stroke="rgba(255,255,255,0.09)" strokeWidth="4" strokeLinecap="round" fill="none"
+        />
       </svg>
     </motion.div>
   );
 }
 
-// ─── Animación moneda cayendo ──────────────────────────────────────────────────
-// La ranura está en viewBox ~x=170, y=80 → ~57% horizontal, ~41% vertical del SVG
+// ─── Moneda cayendo en la ranura ──────────────────────────────────────────────
+// Slot en viewBox 400×270: x=216 (54%), y=90 (33%)
 function CoinDrop({ id, onDone }: { id: number; onDone: (id: number) => void }) {
   return (
     <motion.div
       key={id}
-      initial={{ y: -55, scale: 1.1, opacity: 1, rotate: -15 }}
-      animate={{ y: 0, scale: 0.05, opacity: 0, rotate: 15 }}
-      transition={{ duration: 0.48, ease: [0.55, 0, 1, 0.45] }}
+      initial={{ y: -60, scale: 1.2, opacity: 1, rotate: -20 }}
+      animate={{ y: 6, scale: 0.05, opacity: 0, rotate: 20 }}
+      transition={{ duration: 0.5, ease: [0.6, 0, 0.9, 0.5] }}
       onAnimationComplete={() => onDone(id)}
       style={{
         position: "absolute",
-        top: "41%",
-        left: "57%",
+        top: "33%",
+        left: "54%",
         transform: "translateX(-50%)",
-        fontSize: 30,
+        fontSize: 32,
         pointerEvents: "none",
         zIndex: 30,
+        lineHeight: 1,
       }}
     >
       🪙
@@ -144,7 +246,7 @@ function timeAgo(dateStr: string): string {
   return `hace ${days} días`;
 }
 
-// ─── Página principal ──────────────────────────────────────────────────────────
+// ─── Página ────────────────────────────────────────────────────────────────────
 export default function HuchaPage() {
   const params = useParams();
   const router = useRouter();
@@ -172,15 +274,14 @@ export default function HuchaPage() {
     if (adding) return;
     setAdding(userName);
 
-    // Lanzar moneda
     const coinId = Date.now();
     setCoins((p) => [...p, coinId]);
 
-    // Perrillo se mueve cuando la moneda llega
+    // El perrillo se mueve cuando la moneda llega a la ranura (~480ms)
     setTimeout(() => {
       setJiggle(true);
-      setTimeout(() => setJiggle(false), 550);
-    }, 420);
+      setTimeout(() => setJiggle(false), 520);
+    }, 450);
 
     const entry = await addContribucion(userName);
     if (entry) {
@@ -226,7 +327,7 @@ export default function HuchaPage() {
       {/* Contenido */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px", paddingBottom: "100px" }}>
 
-        {/* Tarjeta principal — perro + contador */}
+        {/* Tarjeta principal */}
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
           style={{
@@ -252,10 +353,9 @@ export default function HuchaPage() {
             )}
           </AnimatePresence>
 
-          {/* Zona del SVG con monedas animadas */}
+          {/* SVG + monedas animadas */}
           <div style={{ position: "relative" }}>
             <DachshundSVG jiggle={jiggle} />
-            {/* Monedas cayendo — posicionadas relativas al SVG */}
             <AnimatePresence>
               {coins.map((id) => (
                 <CoinDrop key={id} id={id} onDone={removeCoin} />
@@ -263,8 +363,8 @@ export default function HuchaPage() {
             </AnimatePresence>
           </div>
 
-          {/* Total */}
-          <div style={{ textAlign: "center", marginTop: 10 }}>
+          {/* Contador */}
+          <div style={{ textAlign: "center", marginTop: 12 }}>
             <motion.p
               key={stats.total}
               initial={{ scale: 1.35, color: "#34C759" }}
@@ -278,7 +378,6 @@ export default function HuchaPage() {
               ahorrados juntos
             </p>
 
-            {/* Stats individuales */}
             <div style={{ display: "flex", justifyContent: "center", gap: 28, alignItems: "center" }}>
               <div style={{ textAlign: "center" }}>
                 <motion.p
@@ -330,14 +429,8 @@ export default function HuchaPage() {
                   transition: "all 0.2s",
                 }}
               >
-                <motion.span
-                  animate={adding === name ? { rotate: 360 } : {}}
-                  transition={{ duration: 0.6, repeat: adding === name ? Infinity : 0, ease: "linear" }}
-                  style={{ fontSize: 24 }}
-                >
-                  {adding === name ? "⏳" : "🪙"}
-                </motion.span>
-                <span style={{ fontSize: 15, fontWeight: 700, color: adding === name ? "rgba(0,0,0,0.35)" : "white" }}>
+                <span style={{ fontSize: 24 }}>{adding === name ? "⏳" : "🪙"}</span>
+                <span style={{ fontSize: 15, fontWeight: 700, color: adding === name ? "rgba(0,0,0,0.3)" : "white" }}>
                   {label}
                 </span>
               </motion.button>
@@ -381,18 +474,13 @@ export default function HuchaPage() {
           )}
         </AnimatePresence>
 
-        {/* Estado vacío */}
         {!loading && stats.entries.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
             style={{ textAlign: "center", paddingTop: 20 }}
           >
-            <p style={{ fontSize: 14, color: "var(--text-quaternary)", fontWeight: 500 }}>
-              La hucha está vacía 🐶
-            </p>
-            <p style={{ fontSize: 12, color: "var(--text-quaternary)", opacity: 0.7 }}>
-              Negad un piropo y ponéis el primer euro
-            </p>
+            <p style={{ fontSize: 14, color: "var(--text-quaternary)", fontWeight: 500 }}>La hucha está vacía 🐶</p>
+            <p style={{ fontSize: 12, color: "var(--text-quaternary)", opacity: 0.7 }}>Negad un piropo y ponéis el primer euro</p>
           </motion.div>
         )}
       </div>
