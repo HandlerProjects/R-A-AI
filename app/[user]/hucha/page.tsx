@@ -6,22 +6,121 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
 import { loadHucha, addContribucion, type HuchaStats } from "@/lib/hucha";
 
-// ─── Moneda cayendo ────────────────────────────────────────────────────────────
-// La ranura de la foto está aprox. en x:52%, y:30% de la imagen
+// ─── Hucha cerámica redonda ────────────────────────────────────────────────────
+// Forma clásica de hucha: cuerpo oval, ranura arriba, tapón abajo.
+function Hucha({ jiggle }: { jiggle: boolean }) {
+  const CER = "radial-gradient(ellipse at 30% 22%, #FFF5E4 0%, #EDD8A8 32%, #C89850 66%, #9A6E28 100%)";
+  const SHN = "inset 16px 4px 28px rgba(255,255,255,0.5), inset -14px 0 24px rgba(80,40,0,0.12), inset 0 -14px 22px rgba(80,40,0,0.1)";
+
+  return (
+    <motion.div
+      animate={jiggle ? { rotate: [-4, 4, -3, 3, -1.5, 1.5, 0] } : {}}
+      transition={{ duration: 0.46 }}
+      style={{ display: "flex", justifyContent: "center", filter: "drop-shadow(0 20px 40px rgba(100,50,0,0.24))" }}
+    >
+      <div style={{ position: "relative", width: 170, height: 186 }}>
+
+        {/* Ranura de monedas (en la cima del cuerpo) */}
+        <div style={{
+          position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)",
+          width: 42, height: 6,
+          background: "#1A0800",
+          borderRadius: 4,
+          boxShadow: "inset 0 3px 8px rgba(0,0,0,0.95), 0 1px 0 rgba(220,160,50,0.2)",
+          zIndex: 6,
+        }} />
+
+        {/* Cúpula superior */}
+        <div style={{
+          position: "absolute", top: 4, left: "50%", transform: "translateX(-50%)",
+          width: 130, height: 60,
+          background: CER,
+          borderRadius: "50% 50% 0 0",
+          boxShadow: SHN,
+          zIndex: 3,
+        }}>
+          {/* Brillo cúpula */}
+          <div style={{
+            position: "absolute", left: 20, top: 12,
+            width: 26, height: 28,
+            background: "linear-gradient(140deg, rgba(255,255,255,0.55) 0%, transparent 100%)",
+            borderRadius: "50%",
+          }} />
+        </div>
+
+        {/* Cuerpo principal (oval, más ancho que la cúpula) */}
+        <div style={{
+          position: "absolute", top: 50, left: "50%", transform: "translateX(-50%)",
+          width: 164, height: 110,
+          background: CER,
+          borderRadius: "50% 50% 44% 44% / 30% 30% 44% 44%",
+          boxShadow: SHN,
+          zIndex: 2,
+          overflow: "hidden",
+        }}>
+          {/* Brillo izquierdo principal */}
+          <div style={{
+            position: "absolute", left: 18, top: 10,
+            width: 24, height: 72,
+            background: "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.06) 65%, transparent 100%)",
+            borderRadius: 16, transform: "rotate(-8deg)",
+          }} />
+          {/* Brillo derecho sutil */}
+          <div style={{
+            position: "absolute", right: 22, top: 18,
+            width: 10, height: 42,
+            background: "rgba(255,255,255,0.14)",
+            borderRadius: 6,
+          }} />
+        </div>
+
+        {/* Base plana */}
+        <div style={{
+          position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)",
+          width: 148, height: 14,
+          background: "linear-gradient(180deg, #9A6E28 0%, #6C4A10 100%)",
+          borderRadius: "0 0 50% 50% / 0 0 90% 90%",
+          zIndex: 2,
+        }} />
+
+        {/* Tapón de vaciado (círculo pequeño en la base) */}
+        <div style={{
+          position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)",
+          width: 28, height: 14,
+          background: "linear-gradient(180deg, #7A5010 0%, #4A2E04 100%)",
+          borderRadius: "0 0 18px 18px",
+          boxShadow: "inset 0 2px 5px rgba(0,0,0,0.4)",
+          zIndex: 3,
+        }} />
+
+        {/* Sombra suelo */}
+        <div style={{
+          position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)",
+          width: 130, height: 10,
+          background: "radial-gradient(ellipse, rgba(100,50,0,0.2) 0%, transparent 80%)",
+          borderRadius: "50%",
+          zIndex: 1,
+        }} />
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Moneda cayendo en la ranura ───────────────────────────────────────────────
 function CoinDrop({ id, onDone }: { id: number; onDone: (id: number) => void }) {
   return (
     <motion.div
       key={id}
-      initial={{ y: -70, scale: 1.3, opacity: 1, rotate: -20 }}
-      animate={{ y: 0,   scale: 0.05, opacity: 0, rotate: 20 }}
+      initial={{ y: -70, scale: 1.3, opacity: 1, rotate: -18 }}
+      animate={{ y: 0,   scale: 0.05, opacity: 0, rotate: 18 }}
       transition={{ duration: 0.52, ease: [0.55, 0.05, 0.9, 0.5] }}
       onAnimationComplete={() => onDone(id)}
       style={{
         position: "absolute",
-        top: "30%",
-        left: "52%",
+        top: "10%",
+        left: "50%",
         transform: "translateX(-50%)",
-        fontSize: 34,
+        fontSize: 32,
         pointerEvents: "none",
         zIndex: 30,
         lineHeight: 1,
@@ -89,7 +188,7 @@ export default function HuchaPage() {
         totalAlejandro: userName === "alejandro" ? prev.totalAlejandro + 1 : prev.totalAlejandro,
         entries: [entry, ...prev.entries],
       }));
-      setToast(userName === "rut" ? "🐾 Rut negó un piropo · +1€" : "🐾 Alejandro negó un piropo · +1€");
+      setToast(userName === "rut" ? "🪙 Rut negó un piropo · +1€" : "🪙 Alejandro negó un piropo · +1€");
       setTimeout(() => setToast(null), 2800);
     }
     setAdding(null);
@@ -98,12 +197,9 @@ export default function HuchaPage() {
   return (
     <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg-primary)", overflow: "hidden" }}>
 
-      {/* Keyframes para la flotación continua */}
+      {/* Float keyframes */}
       <style>{`
-        @keyframes huchaFloat {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-9px); }
-        }
+        @keyframes hFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
       `}</style>
 
       {/* Header */}
@@ -124,7 +220,7 @@ export default function HuchaPage() {
             </svg>
           </button>
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.3px" }}>Hucha 🐶</h1>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.3px" }}>Hucha 🏺</h1>
             <p style={{ fontSize: 11, color: "var(--text-tertiary)", margin: 0 }}>Cada piropo negado, 1€</p>
           </div>
         </div>
@@ -160,37 +256,9 @@ export default function HuchaPage() {
             )}
           </AnimatePresence>
 
-          {/* Foto del perro + monedas */}
-          <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
-            {/* Float wrapper (CSS) + jiggle wrapper (Framer Motion) */}
-            <div style={{ animation: "huchaFloat 3s ease-in-out infinite" }}>
-              <motion.div
-                animate={jiggle
-                  ? { rotate: [-5, 5, -4, 4, -2, 2, 0] }
-                  : { rotate: 0 }
-                }
-                transition={{ duration: 0.48 }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/hucha-dog.png"
-                  alt="Hucha perro salchicha"
-                  style={{
-                    width: "100%",
-                    maxWidth: 240,
-                    height: "auto",
-                    objectFit: "contain",
-                    display: "block",
-                    filter: jiggle
-                      ? "drop-shadow(0 0 18px rgba(210,130,50,0.65)) drop-shadow(0 10px 28px rgba(0,0,0,0.22))"
-                      : "drop-shadow(0 10px 28px rgba(0,0,0,0.18))",
-                    transition: "filter 0.3s ease",
-                  }}
-                />
-              </motion.div>
-            </div>
-
-            {/* Monedas cayendo — posicionadas sobre la foto */}
+          {/* Hucha + monedas */}
+          <div style={{ position: "relative", animation: "hFloat 3.2s ease-in-out infinite" }}>
+            <Hucha jiggle={jiggle} />
             <AnimatePresence>
               {coins.map((id) => (
                 <CoinDrop key={id} id={id} onDone={removeCoin} />
@@ -199,28 +267,22 @@ export default function HuchaPage() {
           </div>
 
           {/* Contador */}
-          <div style={{ textAlign: "center", marginTop: 16 }}>
+          <div style={{ textAlign: "center", marginTop: 14 }}>
             <motion.p
               key={stats.total}
               initial={{ scale: 1.35, color: "#34C759" }}
               animate={{ scale: 1, color: "#3D1204" }}
               transition={{ type: "spring", stiffness: 450, damping: 20 }}
-              style={{
-                fontSize: 62, fontWeight: 900, margin: 0,
-                letterSpacing: "-3px", fontVariantNumeric: "tabular-nums", lineHeight: 1,
-              }}
+              style={{ fontSize: 62, fontWeight: 900, margin: 0, letterSpacing: "-3px", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}
             >
               {loading ? "—" : `€${stats.total}`}
             </motion.p>
             <p style={{ fontSize: 13, color: "rgba(60,18,4,0.42)", margin: "5px 0 20px", fontWeight: 500 }}>
               ahorrados juntos
             </p>
-
             <div style={{ display: "flex", justifyContent: "center", gap: 28, alignItems: "center" }}>
               <div style={{ textAlign: "center" }}>
-                <motion.p
-                  key={`r-${stats.totalRut}`}
-                  initial={{ scale: 1.3 }} animate={{ scale: 1 }}
+                <motion.p key={`r-${stats.totalRut}`} initial={{ scale: 1.3 }} animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 400, damping: 18 }}
                   style={{ fontSize: 26, fontWeight: 800, color: "#FF2D55", margin: 0 }}
                 >€{stats.totalRut}</motion.p>
@@ -228,9 +290,7 @@ export default function HuchaPage() {
               </div>
               <div style={{ width: 1, height: 40, background: "rgba(60,18,4,0.1)" }} />
               <div style={{ textAlign: "center" }}>
-                <motion.p
-                  key={`a-${stats.totalAlejandro}`}
-                  initial={{ scale: 1.3 }} animate={{ scale: 1 }}
+                <motion.p key={`a-${stats.totalAlejandro}`} initial={{ scale: 1.3 }} animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 400, damping: 18 }}
                   style={{ fontSize: 26, fontWeight: 800, color: "#3D1204", margin: 0 }}
                 >€{stats.totalAlejandro}</motion.p>
@@ -243,11 +303,7 @@ export default function HuchaPage() {
         {/* Botones */}
         <motion.div
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
-          style={{
-            background: "white", borderRadius: 22, padding: "20px 16px",
-            marginBottom: 14, boxShadow: "0 2px 14px rgba(0,0,0,0.06)",
-            border: "1px solid rgba(0,0,0,0.05)",
-          }}
+          style={{ background: "white", borderRadius: 22, padding: "20px 16px", marginBottom: 14, boxShadow: "0 2px 14px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.05)" }}
         >
           <p style={{ fontSize: 12, fontWeight: 700, color: "rgba(0,0,0,0.3)", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px", textAlign: "center" }}>
             ¿Alguien negó un piropo?
@@ -289,24 +345,17 @@ export default function HuchaPage() {
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {stats.entries.map((e, i) => (
-                  <motion.div
-                    key={e.id}
+                  <motion.div key={e.id}
                     initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.03 }}
-                    style={{
-                      background: "white", borderRadius: 14, padding: "12px 16px",
-                      display: "flex", alignItems: "center", gap: 12,
-                      boxShadow: "0 1px 6px rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.04)",
-                    }}
+                    style={{ background: "white", borderRadius: 14, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 1px 6px rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.04)" }}
                   >
                     <span style={{ fontSize: 18 }}>{e.user_name === "rut" ? "💗" : "🖤"}</span>
                     <div style={{ flex: 1 }}>
                       <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>
                         {e.user_name === "rut" ? "Rut" : "Alejandro"} negó un piropo
                       </p>
-                      <p style={{ fontSize: 11, color: "var(--text-quaternary)", margin: "2px 0 0" }}>
-                        {timeAgo(e.created_at)}
-                      </p>
+                      <p style={{ fontSize: 11, color: "var(--text-quaternary)", margin: "2px 0 0" }}>{timeAgo(e.created_at)}</p>
                     </div>
                     <span style={{ fontSize: 13, fontWeight: 700, color: "#34C759" }}>+€1</span>
                   </motion.div>
@@ -319,7 +368,7 @@ export default function HuchaPage() {
         {!loading && stats.entries.length === 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
             style={{ textAlign: "center", paddingTop: 20 }}>
-            <p style={{ fontSize: 14, color: "var(--text-quaternary)", fontWeight: 500 }}>La hucha está vacía 🐶</p>
+            <p style={{ fontSize: 14, color: "var(--text-quaternary)", fontWeight: 500 }}>La hucha está vacía 🏺</p>
             <p style={{ fontSize: 12, color: "var(--text-quaternary)", opacity: 0.7 }}>Negad un piropo y ponéis el primer euro</p>
           </motion.div>
         )}
