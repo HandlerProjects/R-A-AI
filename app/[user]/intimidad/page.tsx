@@ -37,9 +37,10 @@ export default function IntimidadPage() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [adding, setAdding] = useState(false);
   const [totales, setTotales] = useState<IntimidadTotales>({ totalFollar: 0, totalOtros: 0 });
+  const [loadingTotales, setLoadingTotales] = useState(true);
 
   useEffect(() => {
-    loadTotales().then(setTotales);
+    loadTotales().then((t) => { setTotales(t); setLoadingTotales(false); });
   }, []);
 
   useEffect(() => {
@@ -156,23 +157,25 @@ export default function IntimidadPage() {
               transition={{ type: "spring", stiffness: 400, damping: 18 }}
               style={{ fontSize: 42, fontWeight: 900, color: "white", margin: 0, letterSpacing: "-2px", lineHeight: 1 }}
             >
-              {totales.totalFollar + totales.totalOtros}
+              {loadingTotales ? "—" : totales.totalFollar + totales.totalOtros}
             </motion.p>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", margin: "4px 0 0", fontWeight: 500 }}>momentos juntos</p>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", margin: "4px 0 0", fontWeight: 500 }}>
+              {loadingTotales ? "cargando..." : totales.totalFollar + totales.totalOtros === 0 ? "añadid el primero" : "momentos juntos"}
+            </p>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-end" }}>
             <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 14, padding: "8px 16px", textAlign: "center", backdropFilter: "blur(8px)" }}>
               <motion.p key={totales.totalFollar} initial={{ scale: 1.25 }} animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 18 }}
                 style={{ fontSize: 22, fontWeight: 800, color: "white", margin: 0, lineHeight: 1 }}
-              >{totales.totalFollar}</motion.p>
+              >{loadingTotales ? "—" : totales.totalFollar}</motion.p>
               <p style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", margin: "3px 0 0", fontWeight: 600 }}>❤️ follamos</p>
             </div>
             <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 14, padding: "8px 16px", textAlign: "center", backdropFilter: "blur(8px)" }}>
               <motion.p key={totales.totalOtros} initial={{ scale: 1.25 }} animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 18 }}
                 style={{ fontSize: 22, fontWeight: 800, color: "white", margin: 0, lineHeight: 1 }}
-              >{totales.totalOtros}</motion.p>
+              >{loadingTotales ? "—" : totales.totalOtros}</motion.p>
               <p style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", margin: "3px 0 0", fontWeight: 600 }}>🩷 otros</p>
             </div>
           </div>
