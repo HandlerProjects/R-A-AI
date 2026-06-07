@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
-import { loadMes, addEntrada, deleteEntrada, type IntimidadEntry, type TipoIntimidad } from "@/lib/intimidad";
+import { loadMes, loadTotales, addEntrada, deleteEntrada, type IntimidadEntry, type TipoIntimidad, type IntimidadTotales } from "@/lib/intimidad";
 
 const MONTHS_ES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const DAYS_ES = ["L","M","X","J","V","S","D"];
@@ -36,6 +36,11 @@ export default function IntimidadPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [adding, setAdding] = useState(false);
+  const [totales, setTotales] = useState<IntimidadTotales>({ totalFollar: 0, totalOtros: 0 });
+
+  useEffect(() => {
+    loadTotales().then(setTotales);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -73,14 +78,25 @@ export default function IntimidadPage() {
     const entry = await addEntrada(tipo, fecha);
     if (entry) {
       setEntries((prev) => [...prev, entry]);
+      setTotales((prev) => ({
+        totalFollar: tipo === "follar" ? prev.totalFollar + 1 : prev.totalFollar,
+        totalOtros:  tipo !== "follar" ? prev.totalOtros  + 1 : prev.totalOtros,
+      }));
     }
     setAdding(false);
     setSelectedDay(null);
   };
 
   const handleDelete = async (id: string) => {
+    const entry = entries.find((e) => e.id === id);
     await deleteEntrada(id);
     setEntries((prev) => prev.filter((e) => e.id !== id));
+    if (entry) {
+      setTotales((prev) => ({
+        totalFollar: entry.tipo === "follar" ? prev.totalFollar - 1 : prev.totalFollar,
+        totalOtros:  entry.tipo !== "follar" ? prev.totalOtros  - 1 : prev.totalOtros,
+      }));
+    }
   };
 
   const isToday = (d: number) =>
@@ -121,6 +137,46 @@ export default function IntimidadPage() {
 
       {/* Contenido */}
       <div style={{ flex: 1, overflowY: "auto", padding: "16px", paddingBottom: "100px" }}>
+
+        {/* Contador histórico */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          style={{
+            background: "linear-gradient(135deg, #FF2D55 0%, #C1135A 100%)",
+            borderRadius: 22, padding: "20px 24px", marginBottom: 12,
+            boxShadow: "0 6px 28px rgba(255,45,85,0.28)",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.08em" }}>En total</p>
+            <motion.p
+              key={totales.totalFollar + totales.totalOtros}
+              initial={{ scale: 1.2 }} animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 18 }}
+              style={{ fontSize: 42, fontWeight: 900, color: "white", margin: 0, letterSpacing: "-2px", lineHeight: 1 }}
+            >
+              {totales.totalFollar + totales.totalOtros}
+            </motion.p>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", margin: "4px 0 0", fontWeight: 500 }}>momentos juntos</p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-end" }}>
+            <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 14, padding: "8px 16px", textAlign: "center", backdropFilter: "blur(8px)" }}>
+              <motion.p key={totales.totalFollar} initial={{ scale: 1.25 }} animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                style={{ fontSize: 22, fontWeight: 800, color: "white", margin: 0, lineHeight: 1 }}
+              >{totales.totalFollar}</motion.p>
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", margin: "3px 0 0", fontWeight: 600 }}>❤️ follamos</p>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 14, padding: "8px 16px", textAlign: "center", backdropFilter: "blur(8px)" }}>
+              <motion.p key={totales.totalOtros} initial={{ scale: 1.25 }} animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                style={{ fontSize: 22, fontWeight: 800, color: "white", margin: 0, lineHeight: 1 }}
+              >{totales.totalOtros}</motion.p>
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", margin: "3px 0 0", fontWeight: 600 }}>🩷 otros</p>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Navegación mes */}
         <motion.div

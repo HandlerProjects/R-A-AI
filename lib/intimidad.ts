@@ -35,6 +35,22 @@ export async function addEntrada(tipo: TipoIntimidad, fecha: string): Promise<In
   return data as IntimidadEntry;
 }
 
+export interface IntimidadTotales {
+  totalFollar: number;
+  totalOtros: number;
+}
+
+export async function loadTotales(): Promise<IntimidadTotales> {
+  const { data, error } = await supabase
+    .from("intimidad_registro")
+    .select("tipo");
+  if (error || !data) return { totalFollar: 0, totalOtros: 0 };
+  return {
+    totalFollar: data.filter((e) => e.tipo === "follar").length,
+    totalOtros:  data.filter((e) => e.tipo !== "follar").length,
+  };
+}
+
 export async function deleteEntrada(id: string): Promise<boolean> {
   const { error } = await supabase
     .from("intimidad_registro")
