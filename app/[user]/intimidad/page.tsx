@@ -113,7 +113,7 @@ export default function IntimidadPage() {
             </svg>
           </button>
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.3px" }}>Momentos ❤️</h1>
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.3px" }}>Secretos 🔐</h1>
             <p style={{ fontSize: 11, color: "var(--text-tertiary)", margin: 0 }}>Solo vosotros lo veis</p>
           </div>
         </div>
