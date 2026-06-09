@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useUserStore, UserName } from "@/store/userStore";
+import { getDailyMessage, getDailyPlan, isFreeDayPlan } from "@/lib/daily-content";
 
 const SHARED_MODULES = [
   { id: "carnet", icon: "💕", title: "Nuestros carnets", description: "Alejandro & Rut · pareja oficial", color: "linear-gradient(135deg, #1C1C1E 0%, #FF2D55 100%)" },
@@ -36,78 +37,6 @@ const RUT_PERSONAL = [
   { id: "psicologo", icon: "🧘", title: "Psicólogo", description: "Tu espacio privado" },
 ];
 
-const DAILY_MESSAGES = [
-  "El amor no se mide en distancia, sino en lo que sientes cuando piensas en esa persona.",
-  "Cada día contigo es el favorito de mi vida.",
-  "No necesito un mapa para encontrarte, siempre sé dónde está mi hogar.",
-  "Eres la persona con la que quiero compartir todos mis momentos normales.",
-  "Te quiero no solo cuando eres perfecto, sino siempre.",
-  "Hay días que solo con saber que existes ya me hacen mejor.",
-  "Lo mejor de despertar es saber que sigues siendo tú.",
-  "El amor verdadero no hace ruido, simplemente está.",
-  "Si pudiera elegir cualquier momento para vivir, elegiría uno contigo.",
-  "Me gustas tanto que a veces me olvido de respirar.",
-  "Eres el único desorden que me gusta tener en la vida.",
-  "Gracias por quedarte incluso cuando no era fácil.",
-  "Contigo aprendí que el amor no duele, lo demás era miedo.",
-  "Eres mi persona favorita en el mundo entero.",
-  "No hay mejor plan que uno que te incluya a ti.",
-  "Cada vez que te echo de menos, me acuerdo de lo afortunado que soy.",
-  "El tiempo pasa más despacio sin ti y demasiado rápido contigo.",
-  "Eres la razón por la que creo en las cosas bonitas.",
-  "Me enamoré de tu manera de ver el mundo.",
-  "No hace falta decirlo siempre, pero hoy sí: te quiero.",
-  "Lo que más me gusta de nosotros es que somos reales.",
-  "Hay algo tuyo en todo lo que me gusta.",
-  "A tu lado incluso los días difíciles tienen algo de bonito.",
-  "El amor no es perfecto, pero lo nuestro sí es especial.",
-  "Te extraño incluso cuando estás cerca.",
-  "Eres lo primero en lo que pienso y lo último antes de dormirme.",
-  "Gracias por hacerme sentir que soy suficiente.",
-  "No busco a nadie más porque ya tengo lo que quería.",
-  "Cada mensaje tuyo me alegra el día sin que te des cuenta.",
-  "Me gusta que existas y que seas tú.",
-  "Contigo hasta el silencio es cómodo.",
-  "Llevas tatuado en mi cabeza aunque estemos lejos.",
-  "El mundo se ve mejor cuando lo veo contigo a mi lado.",
-  "Eres la parte favorita de mi historia.",
-  "No necesito grandes cosas, solo seguir eligiéndote cada día.",
-  "Hay una versión de mí que solo existe cuando estoy contigo.",
-  "Eres de esas personas que hacen que todo valga la pena.",
-  "Juntos somos más de lo que creíamos que podríamos ser.",
-  "Me alegra tanto que un día nos hayamos encontrado.",
-  "El amor no es lo que ves en las películas, es esto que tenemos nosotros.",
-];
-
-const PLAN_IDEAS = [
-  { emoji: "🍝", title: "Cena casera especial", desc: "Elegid una receta que nunca hayáis cocinado juntos y preparadla de cero" },
-  { emoji: "🎬", title: "Noche de pelis", desc: "Una peli cada uno, palomitas caseras y manta — sin mirar el móvil" },
-  { emoji: "🚶", title: "Paseo sin rumbo", desc: "Salid a caminar sin destino y dejad que el camino os lleve a algún sitio nuevo" },
-  { emoji: "☕", title: "Café y charla larga", desc: "Sin pantallas, solo vosotros dos hablando de lo que sea durante horas" },
-  { emoji: "🎮", title: "Tarde de juegos", desc: "Cartas, juego de mesa o videojuego — lo que tengáis en casa" },
-  { emoji: "🌅", title: "Desayuno especial", desc: "Levantaos con calma y preparad un desayuno rico los dos juntos" },
-  { emoji: "📸", title: "Sesión de fotos", desc: "Salid a hacer fotos por el barrio o un parque — seréis vuestros propios fotógrafos" },
-  { emoji: "🍕", title: "Pizza casera", desc: "Haced la masa desde cero, cada uno pone sus ingredientes favoritos" },
-  { emoji: "🎵", title: "Playlist y baile", desc: "Haced una playlist con vuestras canciones y bailad en casa sin vergüenza" },
-  { emoji: "🌙", title: "Noche de estrellas", desc: "Salid a un sitio oscuro, tumbad una manta y mirad el cielo juntos" },
-  { emoji: "🍦", title: "Ruta de helado", desc: "Salid a tomar algo dulce y dad una vuelta larga por la ciudad" },
-  { emoji: "✍️", title: "Cartas de papel", desc: "Escribíos una carta a mano el uno al otro y leedlas juntos en voz alta" },
-  { emoji: "🧩", title: "Tarde de puzzle", desc: "Un puzzle difícil, música de fondo y mucha paciencia — el mejor plan sin salir" },
-  { emoji: "🎤", title: "Karaoke en casa", desc: "YouTube + micrófono improvisado — las canciones más ridículas ganan" },
-  { emoji: "🌿", title: "Mercadillo", desc: "Id a un mercadillo o bazar y mirad cosas sin la obligación de comprar nada" },
-  { emoji: "🍳", title: "Brunch tardío", desc: "Tortitas, huevos o lo que más os guste — sin prisas y con buen café" },
-  { emoji: "🎨", title: "Tarde de arte", desc: "Pintad algo juntos aunque salga fatal — lo que importa es reíros haciéndolo" },
-  { emoji: "📚", title: "Lectura compartida", desc: "Elegid un libro o artículo y leédlo el uno al otro en voz alta" },
-  { emoji: "🛁", title: "Spa en casa", desc: "Mascarillas, velas, música suave y tiempo para desconectar juntos" },
-  { emoji: "🌳", title: "Picnic improvisado", desc: "Algo rico de la nevera, una manta y un parque — el plan perfecto sin gastar nada" },
-];
-
-function getDayOfYear(): number {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  return Math.floor((now.getTime() - start.getTime()) / 86400000);
-}
-
 export default function HomePage() {
   const params = useParams();
   const router = useRouter();
@@ -122,13 +51,10 @@ export default function HomePage() {
   const displayName = isAlejandro ? "Alejandro" : "Rut";
   const accentColor = isAlejandro ? "#1C1C1E" : "#FF2D55";
   const personalModules = isAlejandro ? ALEJANDRO_PERSONAL : RUT_PERSONAL;
-  const greeting = getGreeting();
 
-  const dayOfYear = getDayOfYear();
-  const dailyMessage = DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
-  const dayOfWeek = new Date().getDay(); // 0=Dom, 1=Lun, 5=Vie, 6=Sab
-  const isFreeDayPlan = [0, 1, 5, 6].includes(dayOfWeek);
-  const planIdea = PLAN_IDEAS[dayOfYear % PLAN_IDEAS.length];
+  const dailyMessage = getDailyMessage();
+  const freeDay = isFreeDayPlan();
+  const planIdea = getDailyPlan();
 
   return (
     <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg-primary)", overflow: "hidden" }}>
@@ -142,31 +68,21 @@ export default function HomePage() {
           padding: "16px 20px 12px",
           paddingTop: `calc(16px + env(safe-area-inset-top))`,
           background: "rgba(242,242,247,0.85)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
+          backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
           borderBottom: "1px solid rgba(0,0,0,0.06)",
-          flexShrink: 0,
-          zIndex: 10,
+          flexShrink: 0, zIndex: 10,
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0, fontWeight: 400 }}>{greeting}</p>
-            <h1 style={{ fontSize: 26, fontWeight: 700, color: "var(--text-primary)", margin: "1px 0 0", letterSpacing: "-0.5px", fontFamily: "-apple-system, 'SF Pro Display', sans-serif" }}>
+            <p style={{ fontSize: 13, color: "var(--text-tertiary)", margin: 0, fontWeight: 400 }}>{getGreeting()}</p>
+            <h1 style={{ fontSize: 26, fontWeight: 700, color: "var(--text-primary)", margin: "1px 0 0", letterSpacing: "-0.5px" }}>
               {displayName}
             </h1>
           </div>
-
           <button
             onClick={() => router.push("/")}
-            style={{
-              width: 44, height: 44, borderRadius: "50%",
-              background: accentColor,
-              border: "none", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-              overflow: "hidden",
-            }}
+            style={{ width: 44, height: 44, borderRadius: "50%", background: accentColor, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.2)", overflow: "hidden" }}
           >
             <img
               src={isAlejandro ? "/avatar_alejandro.png" : "/avatar_rut.png"}
@@ -176,20 +92,18 @@ export default function HomePage() {
             />
           </button>
         </div>
-
         <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, background: "rgba(52,199,89,0.12)", border: "1px solid rgba(52,199,89,0.25)", borderRadius: 20, padding: "4px 10px" }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#34C759" }} />
           <span style={{ fontSize: 11, color: "#34C759", fontWeight: 600 }}>R&A activo</span>
         </div>
       </motion.div>
 
-      {/* Scrollable content */}
+      {/* Content */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px", paddingBottom: `calc(84px + env(safe-area-inset-bottom))` }}>
 
-        {/* ── MENSAJE DEL DÍA ──────────────────────────────────── */}
+        {/* Mensaje del día */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08, duration: 0.4 }}
           style={{
             marginBottom: 14, borderRadius: 24,
@@ -206,11 +120,10 @@ export default function HomePage() {
           </p>
         </motion.div>
 
-        {/* ── PLAN DEL DÍA (L/V/S/D) ───────────────────────────── */}
-        {isFreeDayPlan && (
+        {/* Plan del día (L/V/S/D) */}
+        {freeDay && (
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.14, duration: 0.4 }}
             style={{
               marginBottom: 20, borderRadius: 24,
@@ -232,7 +145,7 @@ export default function HomePage() {
           </motion.div>
         )}
 
-        {/* ── CADA DÍA ────────────────────────────────────────── */}
+        {/* Cada día */}
         <section style={{ marginBottom: 24 }}>
           <SectionLabel text="Cada día" />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -242,7 +155,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── CON RUT / CON ALEJANDRO ─────────────────────────── */}
+        {/* Con Rut / Con Alejandro */}
         <section style={{ marginBottom: 24 }}>
           <SectionLabel text={isAlejandro ? "Con Rut" : "Con Alejandro"} />
           <motion.button
@@ -250,14 +163,7 @@ export default function HomePage() {
             transition={{ type: "spring", stiffness: 300, damping: 24, delay: 0.05 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => router.push(`/${userParam}/chat`)}
-            style={{
-              width: "100%", marginBottom: 10,
-              background: "linear-gradient(135deg, #AF52DE 0%, #FF2D55 100%)",
-              border: "none", borderRadius: 20, padding: "20px 22px",
-              display: "flex", alignItems: "center", gap: 16,
-              cursor: "pointer", textAlign: "left",
-              boxShadow: "0 6px 24px rgba(175,82,222,0.28)",
-            }}
+            style={{ width: "100%", marginBottom: 10, background: "linear-gradient(135deg, #AF52DE 0%, #FF2D55 100%)", border: "none", borderRadius: 20, padding: "20px 22px", display: "flex", alignItems: "center", gap: 16, cursor: "pointer", textAlign: "left", boxShadow: "0 6px 24px rgba(175,82,222,0.28)" }}
           >
             <span style={{ fontSize: 34 }}>💬</span>
             <div>
@@ -273,7 +179,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── SOLO TÚ ─────────────────────────────────────────── */}
+        {/* Solo tú */}
         <section style={{ marginBottom: 24 }}>
           <SectionLabel text="Solo tú" />
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -283,41 +189,22 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── VER AL OTRO ─────────────────────────────────────── */}
+        {/* Ver al otro */}
         <section>
           <SectionLabel text={isAlejandro ? "Ver a Rut" : "Ver a Alejandro"} />
           <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, type: "spring", stiffness: 280, damping: 24 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => router.push(isAlejandro ? "/rut" : "/alejandro")}
-            style={{
-              width: "100%",
-              background: isAlejandro
-                ? "linear-gradient(135deg, #FF2D55 0%, #AF52DE 100%)"
-                : "linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%)",
-              border: "none", borderRadius: 18, padding: "16px 20px",
-              display: "flex", alignItems: "center", gap: 14,
-              cursor: "pointer", textAlign: "left",
-              boxShadow: "0 4px 18px rgba(0,0,0,0.15)",
-            }}
+            style={{ width: "100%", background: isAlejandro ? "linear-gradient(135deg, #FF2D55 0%, #AF52DE 100%)" : "linear-gradient(135deg, #1C1C1E 0%, #3A3A3C 100%)", border: "none", borderRadius: 18, padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", textAlign: "left", boxShadow: "0 4px 18px rgba(0,0,0,0.15)" }}
           >
             <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
-              <img
-                src={isAlejandro ? "/avatar_rut.png" : "/avatar_alejandro.png"}
-                alt={isAlejandro ? "Rut" : "Alejandro"}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
+              <img src={isAlejandro ? "/avatar_rut.png" : "/avatar_alejandro.png"} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
             </div>
             <div>
-              <p style={{ fontSize: 15, fontWeight: 700, color: "white", margin: 0 }}>
-                {isAlejandro ? "Ver todo de Rut" : "Ver todo de Alejandro"}
-              </p>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", margin: "2px 0 0" }}>
-                Módulos, conversaciones y más
-              </p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: "white", margin: 0 }}>{isAlejandro ? "Ver todo de Rut" : "Ver todo de Alejandro"}</p>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", margin: "2px 0 0" }}>Módulos, conversaciones y más</p>
             </div>
             <div style={{ marginLeft: "auto", color: "rgba(255,255,255,0.5)", fontSize: 20 }}>›</div>
           </motion.button>
@@ -330,27 +217,17 @@ export default function HomePage() {
 }
 
 function SectionLabel({ text }: { text: string }) {
-  return (
-    <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-quaternary)", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 10 }}>
-      {text}
-    </p>
-  );
+  return <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-quaternary)", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 10 }}>{text}</p>;
 }
 
 function DailyCard({ mod, userParam, delay, router }: any) {
   return (
     <motion.button
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 320, damping: 26, delay }}
       whileTap={{ scale: 0.94 }}
       onClick={() => router.push(`/${userParam}/${mod.id}`)}
-      style={{
-        background: mod.color, border: "none", borderRadius: 20,
-        padding: "18px 14px 16px", display: "flex", flexDirection: "column",
-        alignItems: "flex-start", gap: 10, cursor: "pointer", textAlign: "left",
-        boxShadow: "0 4px 18px rgba(0,0,0,0.14)", minHeight: 110,
-      }}
+      style={{ background: mod.color, border: "none", borderRadius: 20, padding: "18px 14px 16px", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10, cursor: "pointer", textAlign: "left", boxShadow: "0 4px 18px rgba(0,0,0,0.14)", minHeight: 110 }}
     >
       <span style={{ fontSize: 28 }}>{mod.icon}</span>
       <div>
@@ -364,17 +241,11 @@ function DailyCard({ mod, userParam, delay, router }: any) {
 function CompactCard({ mod, userParam, delay, router }: any) {
   return (
     <motion.button
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 26, delay }}
       whileTap={{ scale: 0.94 }}
       onClick={() => router.push(`/${userParam}/${mod.id}`)}
-      style={{
-        background: mod.color, border: "none", borderRadius: 18,
-        padding: "16px 14px", display: "flex", flexDirection: "column",
-        alignItems: "flex-start", gap: 8, cursor: "pointer", textAlign: "left",
-        boxShadow: "0 3px 14px rgba(0,0,0,0.12)", minHeight: 96,
-      }}
+      style={{ background: mod.color, border: "none", borderRadius: 18, padding: "16px 14px", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, cursor: "pointer", textAlign: "left", boxShadow: "0 3px 14px rgba(0,0,0,0.12)", minHeight: 96 }}
     >
       <span style={{ fontSize: 24 }}>{mod.icon}</span>
       <p style={{ fontSize: 13, fontWeight: 700, color: "white", margin: 0, lineHeight: 1.3 }}>{mod.title}</p>
@@ -386,29 +257,16 @@ function PersonalCard({ mod, userParam, delay, router, isAlejandro }: any) {
   const isCartas = mod.id === "cartas";
   return (
     <motion.button
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 24, delay }}
       whileTap={{ scale: 0.97 }}
       onClick={() => router.push(`/${userParam}/${mod.id}`)}
-      style={{
-        background: isCartas ? "linear-gradient(135deg, #7A1231 0%, #C42B5B 100%)" : "white",
-        border: isCartas ? "none" : "1px solid rgba(0,0,0,0.07)",
-        borderRadius: 18, padding: "18px 20px",
-        display: "flex", alignItems: "center", gap: 16,
-        cursor: "pointer", textAlign: "left",
-        boxShadow: isCartas ? "0 6px 24px rgba(196,43,91,0.28)" : "0 2px 10px rgba(0,0,0,0.06)",
-        width: "100%",
-      }}
+      style={{ background: isCartas ? "linear-gradient(135deg, #7A1231 0%, #C42B5B 100%)" : "white", border: isCartas ? "none" : "1px solid rgba(0,0,0,0.07)", borderRadius: 18, padding: "18px 20px", display: "flex", alignItems: "center", gap: 16, cursor: "pointer", textAlign: "left", boxShadow: isCartas ? "0 6px 24px rgba(196,43,91,0.28)" : "0 2px 10px rgba(0,0,0,0.06)", width: "100%" }}
     >
       <span style={{ fontSize: 30, flexShrink: 0 }}>{mod.icon}</span>
       <div>
-        <p style={{ fontSize: 16, fontWeight: 700, color: isCartas ? "white" : "var(--text-primary)", margin: 0, letterSpacing: "-0.2px" }}>
-          {mod.title}
-        </p>
-        <p style={{ fontSize: 12, color: isCartas ? "rgba(255,255,255,0.65)" : "var(--text-tertiary)", margin: "2px 0 0" }}>
-          {mod.description}
-        </p>
+        <p style={{ fontSize: 16, fontWeight: 700, color: isCartas ? "white" : "var(--text-primary)", margin: 0, letterSpacing: "-0.2px" }}>{mod.title}</p>
+        <p style={{ fontSize: 12, color: isCartas ? "rgba(255,255,255,0.65)" : "var(--text-tertiary)", margin: "2px 0 0" }}>{mod.description}</p>
       </div>
       <div style={{ marginLeft: "auto", color: isCartas ? "rgba(255,255,255,0.5)" : "var(--text-quaternary)", fontSize: 18 }}>›</div>
     </motion.button>
@@ -417,14 +275,7 @@ function PersonalCard({ mod, userParam, delay, router, isAlejandro }: any) {
 
 function BottomNav({ userParam, router }: { userParam: string; router: any }) {
   return (
-    <nav style={{
-      position: "fixed", bottom: 0, left: 0, right: 0,
-      background: "rgba(242,242,247,0.92)",
-      backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-      borderTop: "1px solid rgba(0,0,0,0.08)",
-      display: "flex", justifyContent: "space-around", alignItems: "center",
-      paddingBottom: "env(safe-area-inset-bottom)", paddingTop: 8, zIndex: 100,
-    }}>
+    <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(242,242,247,0.92)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderTop: "1px solid rgba(0,0,0,0.08)", display: "flex", justifyContent: "space-around", alignItems: "center", paddingBottom: "env(safe-area-inset-bottom)", paddingTop: 8, zIndex: 100 }}>
       {[
         { icon: "⊞", label: "Inicio", href: `/${userParam}` },
         { icon: "💬", label: "Chat", href: `/${userParam}/chat` },

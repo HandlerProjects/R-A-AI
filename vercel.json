@@ -2,15 +2,11 @@
   "crons": [
     {
       "path": "/api/push/daily",
-      "schedule": "0 11 * * *"
+      "schedule": "0 8 * * *"
     },
     {
       "path": "/api/cartas/check",
       "schedule": "0 11 * * *"
-    },
-    {
-      "path": "/api/push/send-reunion",
-      "schedule": "0 22 4 6 *"
     }
   ]
 }
